@@ -58,7 +58,13 @@ overlay.addEventListener('click',e=>{if(e.target===overlay)closePayment()});
 overlay.querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>{payment=b.dataset.pay;overlay.querySelectorAll('[data-pay]').forEach(x=>x.classList.toggle('active',x===b));const confirm=document.getElementById('waiterPayConfirm');confirm.disabled=false;confirm.textContent=payment==='Não pagou'?'Registrar não pagamento':'Confirmar fechamento'});
 document.getElementById('waiterPayConfirm').onclick=finish;
 
-function labelButton(){const b=document.getElementById('requestClose');if(b)b.textContent='Fechar conta'}
-labelButton();new MutationObserver(labelButton).observe(document.body,{childList:true,subtree:true});
+function labelButton(){
+  const b=document.getElementById('requestClose');
+  if(b&&b.textContent!=='Fechar conta')b.textContent='Fechar conta';
+}
+labelButton();
+const labelObserver=new MutationObserver(labelButton);
+labelObserver.observe(document.body,{childList:true,subtree:true});
+window.addEventListener('beforeunload',()=>labelObserver.disconnect(),{once:true});
 document.addEventListener('click',e=>{const b=e.target.closest?.('#requestClose');if(!b||b.classList.contains('hidden'))return;e.preventDefault();e.stopImmediatePropagation();openPayment()},true);
 })();
