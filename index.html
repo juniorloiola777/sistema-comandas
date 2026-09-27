@@ -5,71 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#8d0c14" />
 <link rel="manifest" href="/manifest.json" />
-<link rel="apple-touch-icon" href="/icons/icon-192.png" />
-<title>Comanda Prime — Sistema de Comandas</title>
+<title>Comanda Prime — Garçom</title>
 <link rel="stylesheet" href="/styles.css">
 </head>
-<body>
-<div class="top-switch">
-  <button id="swWaiter" class="active">Garçom</button>
-  <button id="swAdmin">Administrador</button>
-</div>
-
+<body data-page="waiter">
 <section id="waiterView" class="app waiter-shell">
   <header class="waiter-head">
-    <div class="brand"><div><small>COMANDA</small><h1>Prime</h1></div><div>⚙️</div></div>
-    <div class="user-pill"><span>👤 Usuário: <strong>Garçom 01</strong></span><span>›</span></div>
-    <div class="live-mini"><span class="live-dot"></span><span id="waiterLiveText">Atualização instantânea</span></div>
+    <div class="brand"><div><small>COMANDA</small><h1>Prime</h1></div><div class="brand-badge">Garçom</div></div>
+    <div class="user-pill"><span>👤 Usuário: <strong id="waiterNameLabel">Garçom 01</strong></span><span>● online</span></div>
+    <div class="live-mini"><span class="live-dot"></span><span id="waiterLiveText">Conectando...</span></div>
   </header>
   <main class="content">
-    <h2 class="screen-title">Mesas</h2>
+    <div class="mobile-title-row"><div><div class="eyebrow">ATENDIMENTO</div><h2 class="screen-title">Mesas e comandas</h2></div></div>
     <div class="search"><input id="searchTable" placeholder="Mesa ou nome do cliente"/><button id="searchBtn">Buscar</button></div>
     <div class="action-row"><button class="primary" id="newTable">＋ Abrir mesa</button><button id="newTab">＋ Comanda individual</button></div>
-    <div class="legend"><span><i class="dot" style="background:#1fa34a"></i>Livre</span><span><i class="dot" style="background:#d91e2b"></i>Ocupada</span><span><i class="dot" style="background:#f59e0b"></i>Aguardando fechamento</span></div>
+    <div class="legend"><span><i class="dot" style="background:#1fa34a"></i>Livre</span><span><i class="dot" style="background:#d91e2b"></i>Ocupada</span><span><i class="dot" style="background:#f59e0b"></i>Fechamento</span></div>
     <div id="tableGrid" class="table-grid"></div>
   </main>
-  <div class="bottom-nav"><button class="active">▦<br>Mesas</button><button id="bottomSearch">⌕<br>Buscar</button><button>☰<br>Menu</button></div>
-</section>
-
-<section id="adminView" class="app admin hidden">
-  <aside class="side"><div class="logo">Comanda Prime</div><div class="sub">Painel administrativo local</div><nav><button class="active" onclick="scrollToId('dashboard')">▣ Dashboard</button><button onclick="scrollToId('comandas')">▤ Comandas</button><button onclick="scrollToId('estoque')">▧ Estoque</button><button onclick="scrollToId('produtos')">◩ Produtos</button><button>◌ Categorias</button><button>♙ Funcionários</button><button>◈ Caixa</button><button>⌁ Relatórios</button><button>⚙ Configurações</button></nav></aside>
-  <main class="admin-main">
-    <div id="dashboard" class="admin-head"><div><h1>Visão geral</h1><div class="date">Painel completo • alterações aparecem imediatamente nas telas do garçom</div><div class="live-badge"><span class="live-dot"></span><span id="adminLiveText">Tempo real neste dispositivo</span></div></div><div><strong>Administrador</strong><br><span style="color:#77809a;font-size:12px">Caixa principal</span></div></div>
-    <div class="metrics">
-      <div class="metric"><div class="lab">Vendas hoje</div><div class="num" id="mSales">R$ 0,00</div><div class="delta">● em andamento</div></div>
-      <div class="metric"><div class="lab">Comandas abertas</div><div class="num" id="mOpen">0</div><div class="delta">mesas + individuais</div></div>
-      <div class="metric"><div class="lab">Itens vendidos</div><div class="num" id="mItems">0</div><div class="delta">no turno atual</div></div>
-      <div class="metric"><div class="lab">Estoque baixo</div><div class="num" id="mLow">0</div><div class="delta" style="color:#c2410c">atenção necessária</div></div>
-    </div>
-    <div class="grid2" id="comandas">
-      <div class="panel"><div class="panel-head"><h3>Comandas abertas</h3><button>Ver todas</button></div><div style="overflow:auto"><table><thead><tr><th>IDENTIFICAÇÃO</th><th>GARÇOM</th><th>ABERTA HÁ</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody id="openTable"></tbody></table></div></div>
-      <div class="panel"><div class="panel-head"><h3>Movimento por hora</h3><button>Hoje</button></div><div class="bars"><div class="bar" style="height:34%"><span>18h</span></div><div class="bar" style="height:52%"><span>19h</span></div><div class="bar" style="height:68%"><span>20h</span></div><div class="bar" style="height:86%"><span>21h</span></div><div class="bar" style="height:72%"><span>22h</span></div><div class="bar" style="height:48%"><span>23h</span></div></div></div>
-    </div>
-    <div id="estoque" class="panel" style="margin-top:16px"><div class="panel-head"><h3>Estoque</h3><div class="actions"><button id="addDemoStock">＋ Entrada rápida</button><button class="primary" id="newProductTop">＋ Novo produto</button></div></div><div style="overflow:auto"><table><thead><tr><th>PRODUTO</th><th>CATEGORIA</th><th>QTD.</th><th>MÍNIMO</th><th>STATUS</th><th>AJUSTAR</th></tr></thead><tbody id="stockTable"></tbody></table></div></div>
-    <div id="produtos" class="panel" style="margin-top:16px"><div class="panel-head"><div><h3>Produtos do cardápio</h3><div class="help">Tudo que estiver ativo aqui aparece automaticamente no celular dos garçons.</div></div><button class="primary" id="newProduct">＋ Adicionar produto</button></div><div style="overflow:auto"><table><thead><tr><th>PRODUTO</th><th>CATEGORIA</th><th>PREÇO</th><th>ESTOQUE</th><th>VISIBILIDADE</th><th>AÇÕES</th></tr></thead><tbody id="productTable"></tbody></table></div></div>
-  </main>
+  <div class="bottom-nav">
+    <button class="active" id="bottomTables">▦<br>Mesas</button>
+    <button id="bottomSearch">⌕<br>Buscar</button>
+    <button id="bottomTabs">☰<br>Comandas</button>
+  </div>
 </section>
 
 <div id="overlay" class="overlay hidden"><div class="sheet"><div class="sheet-head"><h3 id="sheetTitle">Nova comanda</h3><button class="x" id="closeSheet">×</button></div><div class="sheet-body">
   <div class="client-line"><input id="clientName" placeholder="Nome do cliente"/><select id="tableSelect"></select></div>
   <div id="categoryChips" class="chips"></div>
   <div id="productsGrid" class="products"></div>
-  <div class="cart"><h4>Pedido</h4><div id="cartLines"></div><div class="cart-total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div><button class="confirm" id="confirmOrder">Lançar pedido</button></div>
-</div></div></div>
-
-<div id="productOverlay" class="overlay hidden"><div class="sheet admin-sheet"><div class="sheet-head"><h3 id="productSheetTitle">Adicionar novo produto</h3><button class="x" id="closeProductSheet">×</button></div><div class="sheet-body">
-  <div class="form-grid">
-    <div class="field full"><label>Nome do produto</label><input id="pName" placeholder="Ex.: Stella Artois long neck"></div>
-    <div class="field"><label>Categoria</label><input id="pCategory" list="categoryOptions" placeholder="Ex.: Cervejas"><datalist id="categoryOptions"></datalist></div>
-    <div class="field"><label>Preço de venda (R$)</label><input id="pPrice" inputmode="decimal" type="number" step="0.01" min="0" placeholder="12,00"></div>
-    <div class="field"><label>Quantidade em estoque</label><input id="pStock" type="number" min="0" step="1" placeholder="24"></div>
-    <div class="field"><label>Estoque mínimo</label><input id="pMin" type="number" min="0" step="1" placeholder="8"></div>
-    <div class="field"><label>Ícone/emoji de reserva</label><input id="pEmoji" maxlength="4" placeholder="🍺"></div>
-    <div class="field"><label>Foto do produto</label><input id="pPhoto" type="file" accept="image/*"><div class="help">A foto fica salva junto ao produto e aparece em tempo real para os garçons.</div></div>
-    <div class="field"><label>Prévia</label><div id="photoPreview" class="photo-preview">📦</div></div>
-    <div class="field full"><label><input id="pActive" type="checkbox" checked style="width:auto;margin-right:8px"> Mostrar este produto para os garçons</label></div>
-  </div>
-  <div class="save-row"><button class="cancel" id="cancelProduct">Cancelar</button><button class="save" id="saveProduct">Salvar produto</button></div>
+  <div class="cart"><h4>Pedido</h4><div id="cartLines"></div><div class="cart-total"><span>Total</span><span id="cartTotal">R$ 0,00</span></div><button class="confirm" id="confirmOrder">Lançar pedido</button><button class="request-close hidden" id="requestClose">Solicitar fechamento</button></div>
 </div></div></div>
 
 <div id="toast" class="toast hidden"></div>
