@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='20';
+  const VERSION='21';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
@@ -34,12 +34,12 @@
 
   const css=document.createElement('link');
   css.rel='stylesheet';
-  css.href='/v2.css';
+  css.href=`/v2.css?v=${VERSION}`;
   document.head.appendChild(css);
 
   function loadScript(path,onload,onerror){
     const s=document.createElement('script');
-    s.src=`/${path}`;
+    s.src=`/${path}?v=${VERSION}`;
     if(onload)s.onload=onload;
     if(onerror)s.onerror=onerror;
     document.body.appendChild(s);
@@ -51,15 +51,18 @@
   }
 
   const shared=document.createElement('script');
-  shared.src='/shared.js';
+  shared.src=`/shared.js?v=${VERSION}`;
   shared.onload=()=>{
     const loadPage=()=>{
-      loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{
-        bootDone();
-        loadScript('login-interaction-fix.js');
-        loadExtraModules();
-        if(isAdmin)loadScript('admin-reset.js');
-      },bootError);
+      const loadAuth=()=>{
+        loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{
+          bootDone();
+          loadExtraModules();
+          if(isAdmin)loadScript('admin-reset.js');
+        },bootError);
+      };
+      // Aplica a correção de interação antes de criar a tela de login.
+      loadScript('login-interaction-fix.js',loadAuth,loadAuth);
     };
     if(isAdmin){
       loadScript('admin-access-fix.js',loadPage,loadPage);
