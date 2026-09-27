@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='22';
+  const VERSION='23';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -46,7 +46,10 @@
   }
 
   function loadExtraModules(){
-    (isAdmin?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js']:['waiter-close.js','waiter-cash-guard.js']).forEach(path=>loadScript(path));
+    (isAdmin
+      ?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js']
+      :['waiter-close.js','waiter-cash-control.js','waiter-cash-guard.js']
+    ).forEach(path=>loadScript(path));
   }
 
   const shared=document.createElement('script');
