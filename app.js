@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='15';
+  const VERSION='16';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
