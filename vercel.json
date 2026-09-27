@@ -8,9 +8,11 @@
     {"source":"/sw.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/app.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/shared.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
+    {"source":"/waiter-auth.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/waiter.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/admin-auth.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/admin.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
+    {"source":"/admin-patch.js","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/v2.css","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]},
     {"source":"/manifest.json","headers":[{"key":"Cache-Control","value":"public, max-age=0, must-revalidate"}]}
   ]
