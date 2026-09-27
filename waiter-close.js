@@ -27,6 +27,7 @@ function identifyOpenOrder(){
 }
 function findOrder(ref){const s=A.state();return ref?.type==='mesa'?s.tables.find(x=>x.id===ref.id):s.tabs.find(x=>x.id===ref?.id)}
 function openPayment(){
+  if(A.state()?.cash?.status!=='open')return A.toast('Caixa fechado. Aguarde o administrador abrir o caixa.');
   target=identifyOpenOrder();payment='';
   const order=findOrder(target);if(!target||!order)return A.toast('Abra uma mesa ou comanda existente para fechar.');
   if(!(order.items||[]).length)return A.toast('Não há itens para fechar.');
@@ -38,11 +39,12 @@ function openPayment(){
 function closePayment(){overlay.classList.add('hidden');target=null;payment=''}
 async function finish(){
   if(!target||!payment||!db)return;
+  if(A.state()?.cash?.status!=='open'){closePayment();return A.toast('Caixa fechado. Fechamento bloqueado.')}
   const s=session();if(!s?.token){A.toast('Sessão encerrada. Entre novamente.');return}
   const btn=document.getElementById('waiterPayConfirm');btn.disabled=true;btn.textContent='Fechando...';
-  const {data,error}=await db.rpc('waiter_close_sale',{p_session_token:s.token,p_type:target.type,p_id:target.id,p_payment:payment});
+  const {data,error}=await db.rpc('waiter_close_sale_guarded',{p_session_token:s.token,p_type:target.type,p_id:target.id,p_payment:payment});
   btn.textContent='Confirmar fechamento';
-  if(error){console.error(error);btn.disabled=false;return A.toast(error.message||'Não foi possível fechar a conta.')}
+  if(error){console.error(error);btn.disabled=false;const m=String(error.message||'');return A.toast(m.toLowerCase().includes('caixa fechado')?'Caixa fechado. Aguarde o administrador abrir.':(m||'Não foi possível fechar a conta.'))}
   const r=Array.isArray(data)?data[0]:data;
   if(!r?.success){btn.disabled=false;return A.toast('Essa conta já foi fechada ou não está mais disponível.')}
   const paid=payment;
