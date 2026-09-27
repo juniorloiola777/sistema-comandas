@@ -1,5 +1,5 @@
-const CACHE='comanda-prime-v17';
-const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-close.js','/waiter-cash-guard.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-reset.js','/manifest.json','/icon.svg'];
+const CACHE='comanda-prime-v18';
+const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-close.js','/waiter-cash-guard.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-reset.js','/manifest.json','/icon.svg'];
 
 self.addEventListener('install',event=>event.waitUntil(
   caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())
@@ -27,15 +27,11 @@ self.addEventListener('fetch',event=>{
       }
       return res;
     }).catch(async()=>{
-      // Para JS/CSS/imagens, nunca devolve HTML. Usa o arquivo em cache ignorando ?v=...
       const cached=await caches.match(req,{ignoreSearch:true});
       if(cached)return cached;
-
-      // Só navegação de página recebe fallback HTML.
       if(isNavigation){
         return caches.match(url.pathname.startsWith('/admin')?'/admin.html':'/index.html');
       }
-
       return new Response('',{status:503,statusText:'Offline'});
     })
   );
