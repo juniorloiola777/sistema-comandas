@@ -2,7 +2,7 @@
 const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
 const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
 const STORAGE_KEY='comandaPrimeStateV6';
-const ADMIN_EMAIL='ronilda@comandaprime.local';
+const ADMIN_EMAIL='ronilda@comandaprime.app';
 const cloud=(location.protocol==='http:'||location.protocol==='https:')&&!!window.supabase;
 const db=cloud?window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY):null;
 const page=document.body.dataset.page||'waiter';
