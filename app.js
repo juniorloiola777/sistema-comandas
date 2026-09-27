@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='23';
+  const VERSION='24';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -20,6 +20,23 @@
   },{passive:false});
 
   const isAdmin=document.body.dataset.page==='admin';
+
+  if(!isAdmin){
+    const waiterOrderStyle=document.createElement('style');
+    waiterOrderStyle.textContent=`
+      body[data-page="waiter"] #overlay .sheet{height:93vh;max-height:93vh;overflow:hidden;display:flex;flex-direction:column}
+      body[data-page="waiter"] #overlay .sheet-head{position:relative;top:auto;flex:0 0 auto;z-index:3}
+      body[data-page="waiter"] #overlay .sheet-body{flex:1 1 auto;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:16px}
+      body[data-page="waiter"] #overlay .client-line{flex:0 0 auto}
+      body[data-page="waiter"] #overlay .chips{flex:0 0 auto;scrollbar-width:none}
+      body[data-page="waiter"] #overlay .chips::-webkit-scrollbar{display:none}
+      body[data-page="waiter"] #overlay .products{flex:1 1 auto;min-height:180px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:2px 1px 14px}
+      body[data-page="waiter"] #overlay .cart{flex:0 0 auto;max-height:32vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin-top:10px}
+      @media(max-height:700px){body[data-page="waiter"] #overlay .products{min-height:135px}body[data-page="waiter"] #overlay .cart{max-height:29vh}}
+    `;
+    document.head.appendChild(waiterOrderStyle);
+  }
+
   const mainView=document.getElementById(isAdmin?'adminView':'waiterView');
   mainView?.classList.add('hidden');
 
@@ -52,9 +69,60 @@
     ).forEach(path=>loadScript(path));
   }
 
+  function installPersistentWaiterSession(){
+    if(isAdmin||!window.APP)return;
+    const A=window.APP;
+    const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
+    const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
+    const SESSION_KEY='comandaPrimeWaiterSessionV1';
+    const THIRTY_DAYS=30*24*60*60*1000;
+    const readSession=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}};
+    const saveSession=s=>{try{s?localStorage.setItem(SESSION_KEY,JSON.stringify(s)):localStorage.removeItem(SESSION_KEY)}catch(_){}};
+
+    A.waiterSession=async()=>{
+      const s=readSession();
+      if(!s?.token)return{ok:false,reason:'no_session'};
+      const localUser={username:s.username,displayName:s.displayName||s.username};
+      const exp=s.expiresAt?Date.parse(s.expiresAt):NaN;
+      if(Number.isFinite(exp)&&exp<=Date.now()){
+        saveSession(null);
+        return{ok:false,reason:'expired'};
+      }
+      if(!A.cloud)return{ok:true,user:localUser};
+
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),4500);
+      try{
+        const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/waiter_validate_session`,{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Accept':'application/json','apikey':SUPABASE_KEY},
+          body:JSON.stringify({p_session_token:s.token}),
+          signal:controller.signal,
+          cache:'no-store'
+        });
+        if(!res.ok)throw new Error(`Falha HTTP ${res.status}`);
+        const data=await res.json();
+        const r=Array.isArray(data)?data[0]:data;
+        if(!r?.valid){
+          saveSession(null);
+          return{ok:false,reason:'invalid'};
+        }
+        const next={...s,username:r.username,displayName:r.display_name||s.displayName,expiresAt:new Date(Date.now()+THIRTY_DAYS).toISOString()};
+        saveSession(next);
+        return{ok:true,user:{username:next.username,displayName:next.displayName}};
+      }catch(error){
+        console.warn('Validação online indisponível; mantendo sessão local do garçom.',error);
+        return{ok:true,user:localUser,offline:true};
+      }finally{
+        clearTimeout(timer);
+      }
+    };
+  }
+
   const shared=document.createElement('script');
   shared.src=`/shared.js?v=${VERSION}`;
   shared.onload=()=>{
+    installPersistentWaiterSession();
     const loadPage=()=>{
       const loadAuth=()=>{
         loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{
