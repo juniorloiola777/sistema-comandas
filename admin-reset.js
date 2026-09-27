@@ -17,7 +17,7 @@
   const overlay=document.createElement('div');
   overlay.id='resetRecordsOverlay';
   overlay.className='overlay hidden';
-  overlay.innerHTML=`<div class="reset-modal-card"><h3>Zerar todos os registros?</h3><p>Esta ação é permanente e será sincronizada imediatamente com todos os celulares dos garçons.</p><div class="reset-list"><strong>Será apagado:</strong><br>• todas as mesas e comandas abertas<br>• todos os itens/pedidos lançados<br>• todas as vendas fechadas<br>• caixa e formas de pagamento registradas<br>• dados usados nos relatórios de vendas</div><div class="reset-preserve"><strong>Será mantido:</strong> produtos, fotos, preços, estoque atual, categorias, funcionários, logins, senhas e configurações.</div><label class="reset-confirm-label" for="resetConfirmInput">Digite ZERAR para confirmar</label><input id="resetConfirmInput" class="reset-confirm-input" autocomplete="off" placeholder="ZERAR"><div class="reset-actions"><button id="cancelResetRecords" class="reset-cancel" type="button">Cancelar</button><button id="confirmResetRecords" class="reset-confirm" type="button" disabled>Zerar tudo</button></div></div>`;
+  overlay.innerHTML=`<div class="reset-modal-card"><h3>Zerar todos os registros?</h3><p>Esta ação é permanente e será sincronizada imediatamente com todos os celulares dos garçons.</p><div class="reset-list"><strong>Será apagado:</strong><br>• todas as mesas e comandas abertas<br>• todos os itens/pedidos lançados<br>• todas as vendas fechadas<br>• caixa, formas de pagamento e histórico de fechamentos do caixa<br>• dados usados nos relatórios de vendas</div><div class="reset-preserve"><strong>Será mantido:</strong> produtos, fotos, preços, estoque atual, categorias, funcionários, logins, senhas e configurações.</div><label class="reset-confirm-label" for="resetConfirmInput">Digite ZERAR para confirmar</label><input id="resetConfirmInput" class="reset-confirm-input" autocomplete="off" placeholder="ZERAR"><div class="reset-actions"><button id="cancelResetRecords" class="reset-cancel" type="button">Cancelar</button><button id="confirmResetRecords" class="reset-confirm" type="button" disabled>Zerar tudo</button></div></div>`;
   document.body.appendChild(overlay);
 
   const openBtn=document.getElementById('resetRecordsBtn');
@@ -39,6 +39,8 @@
     confirmBtn.textContent='Zerando...';
     const ok=await A.commit(s=>{
       s.closedSales=[];
+      s.cashClosings=[];
+      s.cash={status:'closed',openedAt:null,openingAmount:0,pausedAt:null,lastClosedAt:null};
       s.tabs=[];
       s.tables.forEach(t=>{
         t.client='';
@@ -51,7 +53,7 @@
     },'Todos os registros foram zerados');
     if(ok){
       closeModal();
-      A.toast('Sistema zerado • mesas livres e registros apagados');
+      A.toast('Sistema zerado • caixa fechado e registros apagados');
     }else{
       confirmBtn.textContent='Zerar tudo';
       confirmBtn.disabled=input.value.trim().toUpperCase()!=='ZERAR';
