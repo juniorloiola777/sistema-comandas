@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0b1739" />
+<title>Comanda Prime — Administração</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body data-page="admin">
+<section id="adminView" class="app admin">
+  <aside class="side">
+    <div class="logo">Comanda Prime</div><div class="sub">Painel administrativo • computador</div>
+    <nav id="adminNav">
+      <button class="active" data-tab="dashboard">▣ Dashboard</button>
+      <button data-tab="comandas">▤ Comandas</button>
+      <button data-tab="estoque">▧ Estoque</button>
+      <button data-tab="produtos">◩ Produtos</button>
+      <button data-tab="categorias">◌ Categorias</button>
+      <button data-tab="funcionarios">♙ Funcionários</button>
+      <button data-tab="caixa">◈ Caixa</button>
+      <button data-tab="relatorios">⌁ Relatórios</button>
+      <button data-tab="configuracoes">⚙ Configurações</button>
+    </nav>
+    <div class="side-foot"><span class="live-dot"></span><span id="adminLiveText">Conectando...</span></div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar"><div><div class="eyebrow">ADMINISTRAÇÃO</div><h1 id="adminPageTitle">Dashboard</h1><div class="date">Dados sincronizados com os celulares dos garçons</div></div><div class="admin-user"><strong>Administrador</strong><span>Caixa principal</span></div></header>
+
+    <section class="admin-section active" data-section="dashboard">
+      <div class="metrics">
+        <div class="metric"><div class="lab">Vendas abertas</div><div class="num" id="mSales">R$ 0,00</div><div class="delta">● em andamento</div></div>
+        <div class="metric"><div class="lab">Comandas abertas</div><div class="num" id="mOpen">0</div><div class="delta">mesas + individuais</div></div>
+        <div class="metric"><div class="lab">Itens vendidos</div><div class="num" id="mItems">0</div><div class="delta">abertos + fechados</div></div>
+        <div class="metric"><div class="lab">Estoque baixo</div><div class="num" id="mLow">0</div><div class="delta warn">atenção necessária</div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><div class="panel-head"><h3>Comandas abertas</h3><button data-go="comandas">Ver todas</button></div><div class="table-wrap"><table><thead><tr><th>IDENTIFICAÇÃO</th><th>GARÇOM</th><th>ABERTA HÁ</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody id="openTable"></tbody></table></div></div>
+        <div class="panel"><div class="panel-head"><h3>Resumo do caixa</h3><button data-go="caixa">Abrir caixa</button></div><div id="dashboardCash" class="summary-list"></div></div>
+      </div>
+      <div class="panel mt16"><div class="panel-head"><h3>Estoque crítico</h3><button data-go="estoque">Gerenciar estoque</button></div><div id="dashboardLowStock" class="card-list"></div></div>
+    </section>
+
+    <section class="admin-section" data-section="comandas">
+      <div class="section-toolbar"><div><h2>Comandas e mesas</h2><p>Acompanhe pedidos abertos e finalize pagamentos.</p></div><div class="toolbar-actions"><input id="adminOrderSearch" placeholder="Buscar cliente, mesa ou comanda"><select id="adminOrderFilter"><option value="all">Todas</option><option value="busy">Ocupadas</option><option value="wait">Aguardando fechamento</option></select></div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>IDENTIFICAÇÃO</th><th>CLIENTE</th><th>ITENS</th><th>VALOR</th><th>STATUS</th><th>AÇÕES</th></tr></thead><tbody id="ordersAdminTable"></tbody></table></div></div>
+    </section>
+
+    <section class="admin-section" data-section="estoque">
+      <div class="section-toolbar"><div><h2>Estoque</h2><p>Entradas e ajustes aparecem imediatamente para os garçons.</p></div><div class="toolbar-actions"><button class="primary" id="stockEntryBtn">＋ Entrada de estoque</button></div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>PRODUTO</th><th>CATEGORIA</th><th>QTD.</th><th>MÍNIMO</th><th>STATUS</th><th>AJUSTAR</th></tr></thead><tbody id="stockTable"></tbody></table></div></div>
+    </section>
+
+    <section class="admin-section" data-section="produtos">
+      <div class="section-toolbar"><div><h2>Produtos</h2><p>Produtos ativos aparecem no cardápio do garçom em tempo real.</p></div><div class="toolbar-actions"><button class="primary" id="newProduct">＋ Adicionar produto</button></div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>PRODUTO</th><th>CATEGORIA</th><th>PREÇO</th><th>ESTOQUE</th><th>VISIBILIDADE</th><th>AÇÕES</th></tr></thead><tbody id="productTable"></tbody></table></div></div>
+    </section>
+
+    <section class="admin-section" data-section="categorias">
+      <div class="section-toolbar"><div><h2>Categorias</h2><p>Organize os produtos exibidos no celular.</p></div><div class="toolbar-actions"><button class="primary" id="addCategoryBtn">＋ Nova categoria</button></div></div>
+      <div class="panel"><div id="categoryCards" class="category-admin-grid"></div></div>
+    </section>
+
+    <section class="admin-section" data-section="funcionarios">
+      <div class="section-toolbar"><div><h2>Funcionários</h2><p>Cadastre garçons, caixas e responsáveis.</p></div><div class="toolbar-actions"><button class="primary" id="addEmployeeBtn">＋ Novo funcionário</button></div></div>
+      <div class="panel"><div class="table-wrap"><table><thead><tr><th>NOME</th><th>FUNÇÃO</th><th>STATUS</th><th>AÇÃO</th></tr></thead><tbody id="employeeTable"></tbody></table></div></div>
+    </section>
+
+    <section class="admin-section" data-section="caixa">
+      <div class="metrics compact">
+        <div class="metric"><div class="lab">Recebido hoje</div><div class="num" id="cashReceived">R$ 0,00</div></div>
+        <div class="metric"><div class="lab">Em aberto</div><div class="num" id="cashOpen">R$ 0,00</div></div>
+        <div class="metric"><div class="lab">Fechamentos</div><div class="num" id="cashCount">0</div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><div class="panel-head"><h3>Por forma de pagamento</h3></div><div id="paymentSummary" class="summary-list"></div></div>
+        <div class="panel"><div class="panel-head"><h3>Últimos fechamentos</h3></div><div id="closedSalesList" class="summary-list"></div></div>
+      </div>
+    </section>
+
+    <section class="admin-section" data-section="relatorios">
+      <div class="section-toolbar"><div><h2>Relatórios</h2><p>Resumo de vendas e produtos mais vendidos.</p></div></div>
+      <div class="metrics compact">
+        <div class="metric"><div class="lab">Faturamento fechado</div><div class="num" id="reportRevenue">R$ 0,00</div></div>
+        <div class="metric"><div class="lab">Ticket médio</div><div class="num" id="reportTicket">R$ 0,00</div></div>
+        <div class="metric"><div class="lab">Itens vendidos</div><div class="num" id="reportItems">0</div></div>
+      </div>
+      <div class="panel mt16"><div class="panel-head"><h3>Produtos mais vendidos</h3></div><div class="table-wrap"><table><thead><tr><th>PRODUTO</th><th>QUANTIDADE</th><th>FATURAMENTO</th></tr></thead><tbody id="reportProductsTable"></tbody></table></div></div>
+    </section>
+
+    <section class="admin-section" data-section="configuracoes">
+      <div class="section-toolbar"><div><h2>Configurações</h2><p>Personalize o estabelecimento e a operação.</p></div></div>
+      <div class="panel settings-panel">
+        <div class="form-grid">
+          <div class="field"><label>Nome do estabelecimento</label><input id="settingBusinessName"></div>
+          <div class="field"><label>Nome exibido do garçom</label><input id="settingWaiterName"></div>
+          <div class="field"><label>Quantidade de mesas</label><input id="settingTableCount" type="number" min="1" max="100"></div>
+          <div class="field"><label>Mensagem do rodapé</label><input id="settingFooter" placeholder="Atendimento rápido e simples"></div>
+        </div>
+        <div class="save-row"><button class="save" id="saveSettingsBtn">Salvar configurações</button></div>
+        <div class="security-note"><strong>Área administrativa separada.</strong><span>Esta página não aparece no painel do garçom. Para bloqueio por usuário/senha com nível de acesso, será necessário ativar autenticação de funcionários no backend.</span></div>
+      </div>
+    </section>
+  </main>
+</section>
+
+<div id="productOverlay" class="overlay hidden"><div class="sheet admin-sheet"><div class="sheet-head"><h3 id="productSheetTitle">Adicionar novo produto</h3><button class="x" id="closeProductSheet">×</button></div><div class="sheet-body">
+  <div class="form-grid">
+    <div class="field full"><label>Nome do produto</label><input id="pName" placeholder="Ex.: Stella Artois long neck"></div>
+    <div class="field"><label>Categoria</label><input id="pCategory" list="categoryOptions" placeholder="Ex.: Cervejas"><datalist id="categoryOptions"></datalist></div>
+    <div class="field"><label>Preço de venda (R$)</label><input id="pPrice" inputmode="decimal" type="number" step="0.01" min="0"></div>
+    <div class="field"><label>Quantidade em estoque</label><input id="pStock" type="number" min="0" step="1"></div>
+    <div class="field"><label>Estoque mínimo</label><input id="pMin" type="number" min="0" step="1"></div>
+    <div class="field"><label>Ícone/emoji</label><input id="pEmoji" maxlength="4" placeholder="🍺"></div>
+    <div class="field"><label>Foto do produto</label><input id="pPhoto" type="file" accept="image/*"><div class="help">A foto aparece para os garçons.</div></div>
+    <div class="field"><label>Prévia</label><div id="photoPreview" class="photo-preview">📦</div></div>
+    <div class="field full"><label><input id="pActive" type="checkbox" checked style="width:auto;margin-right:8px"> Mostrar este produto para os garçons</label></div>
+  </div>
+  <div class="save-row"><button class="cancel" id="cancelProduct">Cancelar</button><button class="save" id="saveProduct">Salvar produto</button></div>
+</div></div></div>
+
+<div id="orderDetailOverlay" class="overlay hidden"><div class="sheet admin-sheet"><div class="sheet-head"><h3 id="orderDetailTitle">Detalhes</h3><button class="x" id="closeOrderDetail">×</button></div><div class="sheet-body"><div id="orderDetailBody"></div></div></div></div>
+
+<div id="closeSaleOverlay" class="overlay hidden"><div class="sheet admin-sheet small-sheet"><div class="sheet-head"><h3>Fechar comanda</h3><button class="x" id="closeSaleX">×</button></div><div class="sheet-body"><div id="closeSaleSummary" class="close-sale-summary"></div><div class="field"><label>Forma de pagamento</label><select id="paymentMethod"><option>Pix</option><option>Dinheiro</option><option>Débito</option><option>Crédito</option></select></div><div class="save-row"><button class="cancel" id="cancelCloseSale">Cancelar</button><button class="save" id="confirmCloseSale">Confirmar pagamento</button></div></div></div></div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/app.js"></script>
+</body>
+</html>
