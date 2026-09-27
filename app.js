@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='10';
+  const VERSION='11';
   const isAdmin=document.body.dataset.page==='admin';
   const mainView=document.getElementById(isAdmin?'adminView':'waiterView');
   mainView?.classList.add('hidden');
@@ -15,6 +15,11 @@
     const page=document.createElement('script');
     page.src=isAdmin?`/admin-auth.js?v=${VERSION}`:`/waiter-auth.js?v=${VERSION}`;
     document.body.appendChild(page);
+    if(isAdmin){
+      const reset=document.createElement('script');
+      reset.src=`/admin-reset.js?v=${VERSION}`;
+      document.body.appendChild(reset);
+    }
   };
   document.body.appendChild(shared);
 })();
