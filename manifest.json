@@ -1,0 +1,13 @@
+{
+  "name": "Comanda Prime",
+  "short_name": "Comandas",
+  "description": "Sistema PWA de mesas, comandas, produtos, estoque e painel administrativo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fb",
+  "theme_color": "#8d0c14",
+  "orientation": "any",
+  "icons": [
+    {"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
