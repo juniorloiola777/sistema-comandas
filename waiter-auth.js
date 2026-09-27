@@ -33,7 +33,7 @@ const form=$('waiterAuthForm'),userInput=$('waiterAuthUser'),passInput=$('waiter
 let loading=false,authBusy=false;
 function msg(text,error=false){const e=$('waiterAuthMessage');if(!e)return;e.textContent=text;e.className='waiter-auth-message'+(error?' error':'')}
 function busy(on){if(!loginBtn)return;loginBtn.disabled=on;loginBtn.textContent=on?'Entrando...':'Entrar'}
-function loadWaiter(user){if(loading)return;loading=true;gate.remove();waiterView?.classList.remove('hidden');const label=document.getElementById('waiterNameLabel');if(label)label.textContent=user?.displayName||user?.username||'Garçom';const pill=document.querySelector('.user-pill');if(pill){const status=pill.querySelector('span:last-child');if(status){status.innerHTML='';const out=document.createElement('button');out.className='waiter-logout';out.textContent='Sair';out.onclick=async()=>{await A.waiterLogout();location.reload()};status.appendChild(out)}}const script=document.createElement('script');script.src='/waiter.js?v=22';document.body.appendChild(script)}
+function loadWaiter(user){if(loading)return;loading=true;gate.remove();waiterView?.classList.remove('hidden');const label=document.getElementById('waiterNameLabel');if(label)label.textContent=user?.displayName||user?.username||'Garçom';const pill=document.querySelector('.user-pill');if(pill){const status=pill.querySelector('span:last-child');if(status){status.innerHTML='';const out=document.createElement('button');out.className='waiter-logout';out.textContent='Sair';out.onclick=async()=>{await A.waiterLogout();location.reload()};status.appendChild(out)}}const script=document.createElement('script');script.src='/waiter.js?v=23';document.body.appendChild(script)}
 function delay(ms){return new Promise(r=>setTimeout(r,ms))}
 async function directLogin(username,password){
   const controller=new AbortController();
@@ -79,6 +79,5 @@ loginBtn?.addEventListener('touchend',trigger,{passive:false});
   input.addEventListener('pointerup',focus);
   input.addEventListener('touchend',focus,{passive:true});
 });
-
 (async()=>{try{const s=await Promise.race([A.waiterSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),5000))]);if(s?.ok)loadWaiter(s.user)}catch(error){console.warn('Sessão anterior não pôde ser validada',error)}})();
 })();
