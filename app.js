@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='8';
+  const VERSION='9';
   const isAdmin=document.body.dataset.page==='admin';
   if(isAdmin)document.getElementById('adminView')?.classList.add('hidden');
 
