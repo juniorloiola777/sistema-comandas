@@ -3,7 +3,10 @@ const A=window.APP;
 const waiterView=document.getElementById('waiterView');
 waiterView?.classList.add('hidden');
 
-// Garante que nenhuma camada antiga bloqueie toque/clique no login móvel.
+const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
+const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
+const SESSION_KEY='comandaPrimeWaiterSessionV1';
+
 document.querySelectorAll('.cp-boot').forEach(e=>e.remove());
 document.querySelectorAll('body > .overlay').forEach(e=>e.classList.add('hidden'));
 document.documentElement.style.pointerEvents='auto';
@@ -30,33 +33,52 @@ const form=$('waiterAuthForm'),userInput=$('waiterAuthUser'),passInput=$('waiter
 let loading=false,authBusy=false;
 function msg(text,error=false){const e=$('waiterAuthMessage');if(!e)return;e.textContent=text;e.className='waiter-auth-message'+(error?' error':'')}
 function busy(on){if(!loginBtn)return;loginBtn.disabled=on;loginBtn.textContent=on?'Entrando...':'Entrar'}
-function loadWaiter(user){if(loading)return;loading=true;gate.remove();waiterView?.classList.remove('hidden');const label=document.getElementById('waiterNameLabel');if(label)label.textContent=user?.displayName||user?.username||'Garçom';const pill=document.querySelector('.user-pill');if(pill){const status=pill.querySelector('span:last-child');if(status){status.innerHTML='';const out=document.createElement('button');out.className='waiter-logout';out.textContent='Sair';out.onclick=async()=>{await A.waiterLogout();location.reload()};status.appendChild(out)}}const script=document.createElement('script');script.src='/waiter.js?v=21';document.body.appendChild(script)}
-function timeout(ms){return new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms))}
+function loadWaiter(user){if(loading)return;loading=true;gate.remove();waiterView?.classList.remove('hidden');const label=document.getElementById('waiterNameLabel');if(label)label.textContent=user?.displayName||user?.username||'Garçom';const pill=document.querySelector('.user-pill');if(pill){const status=pill.querySelector('span:last-child');if(status){status.innerHTML='';const out=document.createElement('button');out.className='waiter-logout';out.textContent='Sair';out.onclick=async()=>{await A.waiterLogout();location.reload()};status.appendChild(out)}}const script=document.createElement('script');script.src='/waiter.js?v=22';document.body.appendChild(script)}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+async function directLogin(username,password){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/waiter_login`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({p_username:username,p_password:password}),signal:controller.signal,cache:'no-store'});
+    const text=await res.text();
+    let data=null;try{data=text?JSON.parse(text):null}catch(_){data=null}
+    if(!res.ok)throw new Error(data?.message||`Falha HTTP ${res.status}`);
+    const r=Array.isArray(data)?data[0]:data;
+    if(!r?.success||!r?.session_token)return{ok:false,reason:'invalid'};
+    const session={token:r.session_token,username:r.username,displayName:r.display_name,expiresAt:r.expires_at};
+    try{localStorage.setItem(SESSION_KEY,JSON.stringify(session))}catch(_){}
+    return{ok:true,user:{username:session.username,displayName:session.displayName}};
+  }finally{clearTimeout(timer)}
+}
 async function enter(){
   if(authBusy||loading)return;
-  const username=userInput?.value.trim()||'',password=passInput?.value||'';
+  const username=userInput?.value.trim().toLowerCase()||'',password=passInput?.value||'';
   if(!username||!password)return msg('Informe usuário e senha.',true);
   authBusy=true;busy(true);msg('Validando acesso...');
+  await delay(60);
   try{
-    const login=await Promise.race([A.waiterLogin(username,password),timeout(15000)]);
+    const login=await directLogin(username,password);
     if(login?.ok){loadWaiter(login.user);return}
-    if(login?.error)console.error(login.error);
     msg('Usuário ou senha incorretos, ou acesso desativado.',true);
   }catch(error){
     console.error(error);
-    msg('Não foi possível conectar. Verifique a internet e tente novamente.',true);
+    msg(error?.name==='AbortError'?'A conexão demorou demais. Tente novamente.':'Não foi possível conectar ao servidor. Tente novamente.',true);
   }finally{
     if(!loading){authBusy=false;busy(false)}
   }
 }
-
+window.__cpWaiterEnter=enter;
 form?.addEventListener('submit',e=>{e.preventDefault();enter()});
-loginBtn?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();enter()});
+const trigger=e=>{e?.preventDefault?.();e?.stopPropagation?.();enter()};
+loginBtn?.addEventListener('click',trigger);
+loginBtn?.addEventListener('pointerup',trigger);
+loginBtn?.addEventListener('touchend',trigger,{passive:false});
 [userInput,passInput].forEach(input=>{
   if(!input)return;
-  input.addEventListener('touchend',()=>{if(document.activeElement!==input)setTimeout(()=>input.focus(),0)},{passive:true});
-  input.addEventListener('pointerup',()=>{if(document.activeElement!==input)setTimeout(()=>input.focus(),0)});
+  const focus=()=>{if(document.activeElement!==input)setTimeout(()=>input.focus(),0)};
+  input.addEventListener('pointerup',focus);
+  input.addEventListener('touchend',focus,{passive:true});
 });
 
-(async()=>{try{const s=await Promise.race([A.waiterSession(),timeout(8000)]);if(s?.ok)loadWaiter(s.user)}catch(error){console.warn('Sessão anterior não pôde ser validada',error)}})();
+(async()=>{try{const s=await Promise.race([A.waiterSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),5000))]);if(s?.ok)loadWaiter(s.user)}catch(error){console.warn('Sessão anterior não pôde ser validada',error)}})();
 })();

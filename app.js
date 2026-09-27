@@ -1,7 +1,6 @@
 (()=>{
-  const VERSION='21';
+  const VERSION='22';
 
-  // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
 
@@ -61,7 +60,6 @@
           if(isAdmin)loadScript('admin-reset.js');
         },bootError);
       };
-      // Aplica a correção de interação antes de criar a tela de login.
       loadScript('login-interaction-fix.js',loadAuth,loadAuth);
     };
     if(isAdmin){
