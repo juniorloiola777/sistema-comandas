@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='16';
+  const VERSION='17';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
@@ -9,6 +9,7 @@
   noZoomStyle.textContent=`
     html,body{touch-action:manipulation;-webkit-text-size-adjust:100%;}
     @media (max-width:900px){input,select,textarea{font-size:16px!important;}}
+    .cp-boot{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;background:#08142f;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;padding:24px}.cp-boot-card{text-align:center;max-width:330px}.cp-boot-logo{width:62px;height:62px;margin:0 auto 14px;border-radius:19px;display:grid;place-items:center;background:#b51019;font-size:24px;font-weight:950}.cp-boot-title{font-size:22px;font-weight:950}.cp-boot-msg{margin-top:7px;color:#c9d0e1;font-size:13px;line-height:1.5}.cp-boot-retry{display:none;margin:16px auto 0;border:0;border-radius:12px;padding:11px 16px;background:#fff;color:#0b1739;font-weight:900}.cp-boot.error .cp-boot-retry{display:block}
   `;
   document.head.appendChild(noZoomStyle);
 
@@ -23,31 +24,50 @@
   const mainView=document.getElementById(isAdmin?'adminView':'waiterView');
   mainView?.classList.add('hidden');
 
+  const boot=document.createElement('div');
+  boot.className='cp-boot';
+  boot.innerHTML=`<div class="cp-boot-card"><div class="cp-boot-logo">CP</div><div class="cp-boot-title">Comanda Prime</div><div class="cp-boot-msg">Carregando sistema...</div><button class="cp-boot-retry" type="button">Tentar novamente</button></div>`;
+  document.body.appendChild(boot);
+  boot.querySelector('.cp-boot-retry').onclick=()=>location.reload();
+  function bootError(){boot.classList.add('error');boot.querySelector('.cp-boot-msg').textContent='Não foi possível carregar os arquivos do sistema. Verifique a internet e tente novamente.'}
+  function bootDone(){boot.remove()}
+
+  // Sem query string: compatível com instalações PWA que ainda estão sob o service worker anterior.
   const css=document.createElement('link');
   css.rel='stylesheet';
-  css.href=`/v2.css?v=${VERSION}`;
+  css.href='/v2.css';
   document.head.appendChild(css);
 
-  function loadScript(path){const s=document.createElement('script');s.src=`/${path}?v=${VERSION}`;document.body.appendChild(s)}
+  function loadScript(path,onload,onerror){
+    const s=document.createElement('script');
+    s.src=`/${path}`;
+    if(onload)s.onload=onload;
+    if(onerror)s.onerror=onerror;
+    document.body.appendChild(s);
+    return s;
+  }
+
   function loadExtraModules(){
-    (isAdmin?['admin-order-edit.js','admin-cash-control.js']:['waiter-close.js','waiter-cash-guard.js']).forEach(loadScript);
+    (isAdmin?['admin-order-edit.js','admin-cash-control.js']:['waiter-close.js','waiter-cash-guard.js']).forEach(path=>loadScript(path));
   }
 
   const shared=document.createElement('script');
-  shared.src=`/shared.js?v=${VERSION}`;
+  shared.src='/shared.js';
   shared.onload=()=>{
     const loadPage=()=>{
-      loadScript(isAdmin?'admin-auth.js':'waiter-auth.js');
-      loadExtraModules();
-      if(isAdmin)loadScript('admin-reset.js');
+      loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{
+        bootDone();
+        loadExtraModules();
+        if(isAdmin)loadScript('admin-reset.js');
+      },bootError);
     };
     if(isAdmin){
-      const fix=document.createElement('script');
-      fix.src=`/admin-access-fix.js?v=${VERSION}`;
-      fix.onload=loadPage;
-      fix.onerror=loadPage;
-      document.body.appendChild(fix);
+      loadScript('admin-access-fix.js',loadPage,loadPage);
     }else loadPage();
   };
+  shared.onerror=bootError;
   document.body.appendChild(shared);
+
+  // Nunca deixa a pessoa presa em uma tela branca silenciosa.
+  setTimeout(()=>{if(document.body.contains(boot))bootError()},12000);
 })();
