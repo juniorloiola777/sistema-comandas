@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='13';
+  const VERSION='14';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
@@ -28,6 +28,12 @@
   css.href=`/v2.css?v=${VERSION}`;
   document.head.appendChild(css);
 
+  function loadExtraModule(){
+    const extra=document.createElement('script');
+    extra.src=isAdmin?`/admin-order-edit.js?v=${VERSION}`:`/waiter-close.js?v=${VERSION}`;
+    document.body.appendChild(extra);
+  }
+
   const shared=document.createElement('script');
   shared.src=`/shared.js?v=${VERSION}`;
   shared.onload=()=>{
@@ -35,6 +41,7 @@
       const page=document.createElement('script');
       page.src=isAdmin?`/admin-auth.js?v=${VERSION}`:`/waiter-auth.js?v=${VERSION}`;
       document.body.appendChild(page);
+      loadExtraModule();
       if(isAdmin){
         const reset=document.createElement('script');
         reset.src=`/admin-reset.js?v=${VERSION}`;
