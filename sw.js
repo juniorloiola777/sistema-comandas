@@ -1,4 +1,4 @@
-const CACHE='comanda-prime-v7';
+const CACHE='comanda-prime-v8';
 const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter.js','/admin-auth.js','/admin.js','/admin-patch.js','/manifest.json','/icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
