@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='18';
+  const VERSION='19';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
@@ -29,10 +29,9 @@
   boot.innerHTML=`<div class="cp-boot-card"><div class="cp-boot-logo">CP</div><div class="cp-boot-title">Comanda Prime</div><div class="cp-boot-msg">Carregando sistema...</div><button class="cp-boot-retry" type="button">Tentar novamente</button></div>`;
   document.body.appendChild(boot);
   boot.querySelector('.cp-boot-retry').onclick=()=>location.reload();
-  function bootError(){boot.classList.add('error');boot.querySelector('.cp-boot-msg').textContent='Não foi possível carregar os arquivos do sistema. Verifique a internet e tente novamente.'}
+  function bootError(){if(!document.body.contains(boot))return;boot.classList.add('error');boot.querySelector('.cp-boot-msg').textContent='Não foi possível carregar os arquivos do sistema. Verifique a internet e tente novamente.'}
   function bootDone(){boot.remove()}
 
-  // Sem query string: compatível com instalações PWA que ainda estão sob o service worker anterior.
   const css=document.createElement('link');
   css.rel='stylesheet';
   css.href='/v2.css';
@@ -57,6 +56,7 @@
     const loadPage=()=>{
       loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{
         bootDone();
+        loadScript('login-interaction-fix.js');
         loadExtraModules();
         if(isAdmin)loadScript('admin-reset.js');
       },bootError);
@@ -68,6 +68,5 @@
   shared.onerror=bootError;
   document.body.appendChild(shared);
 
-  // Nunca deixa a pessoa presa em uma tela branca silenciosa.
   setTimeout(()=>{if(document.body.contains(boot))bootError()},12000);
 })();
