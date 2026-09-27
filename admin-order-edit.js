@@ -28,5 +28,9 @@ function decorate(type,id){
   (t.items||[]).forEach((item,index)=>{const row=rows[index];if(!row||row.querySelector('.admin-order-line-actions'))return;const actions=document.createElement('div');actions.className='admin-order-line-actions';actions.innerHTML=`<button class="qty" data-act="minus">−1</button><button class="qty" data-act="plus">+1</button><button class="swap" data-act="swap">Trocar</button><button class="remove" data-act="remove">Remover</button>`;actions.querySelector('[data-act="minus"]').onclick=()=>changeQty(type,id,index,-1);actions.querySelector('[data-act="plus"]').onclick=()=>changeQty(type,id,index,1);actions.querySelector('[data-act="swap"]').onclick=()=>swapItem(type,id,index);actions.querySelector('[data-act="remove"]').onclick=()=>removeItem(type,id,index);row.appendChild(actions)})
 }
 function install(){if(typeof window.viewOrder!=='function'||window.__adminOrderEditInstalled)return false;window.__adminOrderEditInstalled=true;const original=window.viewOrder;window.viewOrder=(type,id)=>{original(type,id);setTimeout(()=>decorate(type,id),0)};return true}
-if(!install()){const timer=setInterval(()=>{if(install())clearInterval(timer)},120);setTimeout(()=>clearInterval(timer),12000)}
+if(!install()){
+  const observer=new MutationObserver(()=>{if(install())observer.disconnect()});
+  observer.observe(document.body,{childList:true,subtree:true});
+  const timer=setInterval(()=>{if(install()){clearInterval(timer);observer.disconnect()}},500);
+}
 })();
