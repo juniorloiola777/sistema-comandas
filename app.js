@@ -1,7 +1,8 @@
 (()=>{
-  const VERSION='9';
+  const VERSION='10';
   const isAdmin=document.body.dataset.page==='admin';
-  if(isAdmin)document.getElementById('adminView')?.classList.add('hidden');
+  const mainView=document.getElementById(isAdmin?'adminView':'waiterView');
+  mainView?.classList.add('hidden');
 
   const css=document.createElement('link');
   css.rel='stylesheet';
@@ -12,7 +13,7 @@
   shared.src=`/shared.js?v=${VERSION}`;
   shared.onload=()=>{
     const page=document.createElement('script');
-    page.src=isAdmin?`/admin-auth.js?v=${VERSION}`:`/waiter.js?v=${VERSION}`;
+    page.src=isAdmin?`/admin-auth.js?v=${VERSION}`:`/waiter-auth.js?v=${VERSION}`;
     document.body.appendChild(page);
   };
   document.body.appendChild(shared);
