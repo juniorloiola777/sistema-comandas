@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='19';
+  const VERSION='20';
 
   // Comportamento de app: trava a escala e evita zoom por gesto ou foco em campos no celular.
   const viewport=document.querySelector('meta[name="viewport"]');
@@ -47,7 +47,7 @@
   }
 
   function loadExtraModules(){
-    (isAdmin?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js']:['waiter-close.js','waiter-cash-guard.js']).forEach(path=>loadScript(path));
+    (isAdmin?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js']:['waiter-close.js','waiter-cash-guard.js']).forEach(path=>loadScript(path));
   }
 
   const shared=document.createElement('script');

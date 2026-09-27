@@ -1,5 +1,5 @@
-const CACHE='comanda-prime-v18';
-const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-close.js','/waiter-cash-guard.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-reset.js','/manifest.json','/icon.svg'];
+const CACHE='comanda-prime-v20';
+const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-close.js','/waiter-cash-guard.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-delete-user.js','/admin-reset.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
 
 self.addEventListener('install',event=>event.waitUntil(
   caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())
