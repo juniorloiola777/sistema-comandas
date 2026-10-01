@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='37';
+  const VERSION='38';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -12,9 +12,7 @@
   `;
   document.head.appendChild(noZoomStyle);
 
-  ['gesturestart','gesturechange','gestureend'].forEach(type=>{
-    document.addEventListener(type,event=>event.preventDefault(),{passive:false});
-  });
+  ['gesturestart','gesturechange','gestureend'].forEach(type=>document.addEventListener(type,event=>event.preventDefault(),{passive:false}));
   document.addEventListener('wheel',event=>{if(event.ctrlKey)event.preventDefault()},{passive:false});
 
   const isAdmin=document.body.dataset.page==='admin';
@@ -45,11 +43,7 @@
     if(isAdmin){
       loadSequence(['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-audit-v28.js','admin-safe-enhancements.js','admin-reset.js']);
     }else{
-      loadScript('waiter-cash-control.js',()=>{
-        loadScript('waiter-cash-guard.js',()=>{
-          loadScript('waiter-ui-v28.js',()=>loadScript('waiter-ui-v30-fixes.js',()=>loadScript('waiter-ui-v34-fixes.js')));
-        });
-      });
+      loadScript('waiter-cash-control.js',()=>loadScript('waiter-cash-guard.js',()=>loadScript('waiter-ui-v34-fixes.js')));
     }
   }
   function installPersistentWaiterSession(){
