@@ -60,4 +60,11 @@
       confirmBtn.disabled=input.value.trim().toUpperCase()!=='ZERAR';
     }
   };
+
+  if(!document.querySelector('script[data-admin-enhancements]')){
+    const extra=document.createElement('script');
+    extra.src='/admin-enhancements.js?v=1';
+    extra.dataset.adminEnhancements='1';
+    document.body.appendChild(extra);
+  }
 })();
