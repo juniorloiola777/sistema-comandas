@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='28';
+  const VERSION='29';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -35,15 +35,22 @@
   }
 
   const mainView=document.getElementById(isAdmin?'adminView':'waiterView');mainView?.classList.add('hidden');
-  const boot=document.createElement('div');boot.className='cp-boot';boot.innerHTML=`<div class="cp-boot-card"><div class="cp-boot-logo">CP</div><div class="cp-boot-title">Comanda Prime</div><div class="cp-boot-msg">Carregando sistema...</div><button class="cp-boot-retry" type="button">Tentar novamente</button></div>`;document.body.appendChild(boot);boot.querySelector('.cp-boot-retry').onclick=()=>location.reload();
+  const boot=document.createElement('div');boot.className='cp-boot';boot.innerHTML=`<div class="cp-boot-card"><div class="cp-boot-logo">C</div><div class="cp-boot-title">Comanda</div><div class="cp-boot-msg">Carregando sistema...</div><button class="cp-boot-retry" type="button">Tentar novamente</button></div>`;document.body.appendChild(boot);boot.querySelector('.cp-boot-retry').onclick=()=>location.reload();
   function bootError(){if(!document.body.contains(boot))return;boot.classList.add('error');boot.querySelector('.cp-boot-msg').textContent='Não foi possível carregar os arquivos do sistema. Verifique a internet e tente novamente.'}
   function bootDone(){boot.remove()}
   const css=document.createElement('link');css.rel='stylesheet';css.href=`/v2.css?v=${VERSION}`;document.head.appendChild(css);
   function loadScript(path,onload,onerror){const s=document.createElement('script');s.src=`/${path}?v=${VERSION}`;if(onload)s.onload=onload;if(onerror)s.onerror=onerror;document.body.appendChild(s);return s}
-  function loadExtraModules(){(isAdmin
-      ?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-product-delete-lock.js','admin-audit-v28.js']
-      :['waiter-cash-control.js','waiter-cash-guard.js','waiter-ui-v28.js']
-    ).forEach(path=>loadScript(path))}
+  function loadExtraModules(){
+    if(isAdmin){
+      ['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-product-delete-lock.js','admin-audit-v28.js'].forEach(path=>loadScript(path));
+    }else{
+      loadScript('waiter-cash-control.js',()=>{
+        loadScript('waiter-cash-guard.js',()=>{
+          loadScript('waiter-ui-v28.js',()=>loadScript('waiter-ui-v29-fixes.js'));
+        });
+      });
+    }
+  }
   function installPersistentWaiterSession(){
     if(isAdmin||!window.APP)return;const A=window.APP;
     const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';const SESSION_KEY='comandaPrimeWaiterSessionV1';const THIRTY_DAYS=30*24*60*60*1000;
