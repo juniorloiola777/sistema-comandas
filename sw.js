@@ -1,5 +1,5 @@
-const CACHE='comanda-prime-v47';
-const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-cash-control.js','/waiter-cash-guard.js','/waiter-ui-v34-fixes.js','/admin-auth.js','/admin-access-fix.js','/admin-unified-v44.js','/admin-sales-month-v45.js','/admin-product-category-v46.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
+const CACHE='comanda-prime-v48';
+const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-cash-control.js','/waiter-cash-guard.js','/waiter-ui-v34-fixes.js','/admin-auth.js','/admin-access-fix.js','/admin-unified-v44.js','/admin-sales-stable-v48.js','/admin-product-category-v46.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
 
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
