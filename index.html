@@ -27,7 +27,7 @@
     <div class="mobile-title-row"><div><div class="eyebrow">ATENDIMENTO</div><h2 class="screen-title">Mesas</h2></div></div>
 
     <div id="waiterSettingsUnified" class="waiter-settings-u">
-      <div class="user-pill"><span>👤 Usuário: <strong id="waiterNameLabel">Garçom 01</strong></span><button id="waiterLogoutBtn" type="button">Sair</button></div>
+      <div class="user-pill"><span>👤 Usuário: <strong id="waiterNameLabel">Garçom 01</strong></span><button id="waiterLogoutBtn" type="button" onclick="(async()=>{try{await window.APP?.waiterLogout?.()}finally{location.reload()}})()">Sair</button></div>
       <div class="live-mini"><span class="live-dot"></span><span id="waiterLiveText">Conectando...</span></div>
     </div>
 
