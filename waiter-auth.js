@@ -7,7 +7,7 @@ document.body.classList.remove('waiter-ui-ready');
 const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
 const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
 const SESSION_KEY='comandaPrimeWaiterSessionV1';
-const APP_VERSION='40';
+const APP_VERSION='41';
 
 document.querySelectorAll('body > .overlay').forEach(e=>e.classList.add('hidden'));
 document.documentElement.style.pointerEvents='auto';
@@ -38,6 +38,34 @@ let loading=false,authBusy=false;
 function msg(text,error=false){const e=$('waiterAuthMessage');if(!e)return;e.textContent=text;e.className='waiter-auth-message'+(error?' error':'')}
 function busy(on){if(!loginBtn)return;loginBtn.disabled=on;loginBtn.textContent=on?'Entrando...':'Entrar'}
 function loadScript(path){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=`/${path}?v=${APP_VERSION}`;s.onload=()=>resolve(s);s.onerror=()=>reject(new Error(`Falha ao carregar ${path}`));document.body.appendChild(s)})}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function enforceFinalWaiterLayout(){
+  document.querySelector('#waiterView .search')?.style.setProperty('display','none','important');
+  document.querySelector('#waiterView .action-row')?.style.setProperty('display','none','important');
+  document.querySelector('#bottomSearch')?.style.setProperty('display','none','important');
+  const nav=document.querySelector('.bottom-nav');if(nav)nav.style.gridTemplateColumns='1fr 1fr';
+  const title=document.querySelector('.screen-title');if(title)title.textContent='Mesas';
+  const grid=document.querySelector('#tableGrid');if(grid)grid.style.display='grid';
+  const legend=document.querySelector('#waiterView .legend');if(legend)legend.style.display='flex';
+}
+async function waitForFinalUi(){
+  const deadline=Date.now()+2200;
+  while(Date.now()<deadline){
+    enforceFinalWaiterLayout();
+    const search=document.querySelector('#waiterView .search');
+    const actions=document.querySelector('#waiterView .action-row');
+    const bottomSearch=document.querySelector('#bottomSearch');
+    const tabs=document.querySelector('#bottomTabs');
+    const tables=document.querySelectorAll('#tableGrid .table-card');
+    const oldHidden=(!search||getComputedStyle(search).display==='none')&&(!actions||getComputedStyle(actions).display==='none')&&(!bottomSearch||getComputedStyle(bottomSearch).display==='none');
+    const newReady=tabs&&/Ajustes/i.test(tabs.textContent||'')&&tables.length>=14;
+    if(oldHidden&&newReady){await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true}
+    await delay(80);
+  }
+  enforceFinalWaiterLayout();
+  await delay(180);
+  return true;
+}
 async function loadWaiter(user){
   if(loading)return;
   loading=true;
@@ -52,10 +80,10 @@ async function loadWaiter(user){
     await loadScript('waiter-cash-control.js');
     await loadScript('waiter-cash-guard.js');
     await loadScript('waiter-ui-v34-fixes.js');
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    await waitForFinalUi();
     document.body.classList.add('waiter-ui-ready');
     waiterView?.classList.remove('hidden');
-    await new Promise(r=>requestAnimationFrame(r));
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     gate.remove();
     window.dispatchEvent(new CustomEvent('cp-waiter-ui-ready'));
   }catch(error){
@@ -68,7 +96,6 @@ async function loadWaiter(user){
     msg('Verifique a internet e abra o app novamente.',true);
   }
 }
-function delay(ms){return new Promise(r=>setTimeout(r,ms))}
 async function directLogin(username,password){
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),8000);
