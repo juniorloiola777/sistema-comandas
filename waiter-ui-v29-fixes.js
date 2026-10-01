@@ -7,7 +7,7 @@ async function syncState(){try{const r=await fetch(`${SUPABASE_URL}/rest/v1/app_
 const style=document.createElement('style');style.textContent=`
 #waiterSettingsArea{display:none;margin-bottom:12px}#waiterSettingsArea.active{display:block}.settings-stack-v29{display:grid;gap:10px}.settings-stack-v29 .user-pill,.settings-stack-v29 .live-mini,.settings-stack-v29 .waiter-cash-controls,.settings-stack-v29 .waiter-cash-banner{margin:0!important;width:100%!important}.waiter-head .brand small{display:none!important}.waiter-head .brand h1{font-size:32px!important;letter-spacing:.02em}.add-table-card{order:9999}.add-table-card .table-no{font-size:34px!important}.add-table-card .client{font-size:13px!important}.add-table-card .meta{font-size:10px!important}
 `;document.head.appendChild(style);
-function renameBrand(){const h=$('.waiter-head .brand h1');if(h)h.textContent='COMANDA';const adminLogo=$('.side .logo');if(adminLogo)adminLogo.textContent='Comanda'}
+function renameBrand(){const h=$('.waiter-head .brand h1');if(h)h.textContent='COMANDA'}
 function settingsArea(){let area=$('#waiterSettingsArea');if(area)return area;const content=$('#waiterView .content');if(!content)return null;area=document.createElement('div');area.id='waiterSettingsArea';area.innerHTML='<div class="settings-stack-v29"></div>';const title=$('.mobile-title-row');if(title?.nextSibling)content.insertBefore(area,title.nextSibling);else content.prepend(area);return area}
 function moveSettings(){const area=settingsArea(),stack=area?.querySelector('.settings-stack-v29');if(!stack)return;['.user-pill','.live-mini','#waiterCashControls','#waiterCashBanner'].forEach(sel=>{const el=$(sel);if(el&&el.parentElement!==stack)stack.appendChild(el)})}
 function adjustmentsActive(){return $('#waiterAdjustments')?.classList.contains('active')}
@@ -21,7 +21,8 @@ async function reopen(id){const sale=allClosed().find(x=>Number(x.id)===id);if(!
 function ensureLayout(){renameBrand();moveSettings();ensurePlus();syncMode()}
 const grid=$('#tableGrid');if(grid){const mo=new MutationObserver(()=>{if(!adjustmentsActive())ensurePlus()});mo.observe(grid,{childList:true})}
 document.addEventListener('click',e=>{if(e.target.closest?.('#bottomTables,#bottomTabs'))setTimeout(syncMode,0)},true);
-const finish=$('#finishPayV28');if(finish)finish.addEventListener('click',()=>{setTimeout(syncState,450);setTimeout(syncState,1200)});
+const finish=$('#finishPayV28');if(finish)finish.addEventListener('click',()=>{setTimeout(syncState,450);setTimeout(syncState,1200);setTimeout(syncState,3000)});
+const payOverlay=$('#waiterPayV28');if(payOverlay){let wasOpen=!payOverlay.classList.contains('hidden');const po=new MutationObserver(()=>{const isOpen=!payOverlay.classList.contains('hidden');if(wasOpen&&!isOpen){setTimeout(syncState,120)}wasOpen=isOpen});po.observe(payOverlay,{attributes:true,attributeFilter:['class']})}
 const originalRender=window.renderPage;if(typeof originalRender==='function'&&!originalRender.__v29){const wrapped=function(){const r=originalRender.apply(this,arguments);setTimeout(ensureLayout,0);return r};wrapped.__v29=true;window.renderPage=wrapped}
 setInterval(()=>{renameBrand();moveSettings();if(!adjustmentsActive())ensurePlus()},1200);
 setTimeout(()=>{ensureLayout();syncState()},250);
