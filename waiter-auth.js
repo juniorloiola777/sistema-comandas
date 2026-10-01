@@ -2,11 +2,12 @@
 const A=window.APP;
 const waiterView=document.getElementById('waiterView');
 waiterView?.classList.add('hidden');
+document.body.classList.remove('waiter-ui-ready');
 
 const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
 const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
 const SESSION_KEY='comandaPrimeWaiterSessionV1';
-const APP_VERSION='39';
+const APP_VERSION='40';
 
 document.querySelectorAll('body > .overlay').forEach(e=>e.classList.add('hidden'));
 document.documentElement.style.pointerEvents='auto';
@@ -52,12 +53,15 @@ async function loadWaiter(user){
     await loadScript('waiter-cash-guard.js');
     await loadScript('waiter-ui-v34-fixes.js');
     await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    document.body.classList.add('waiter-ui-ready');
     waiterView?.classList.remove('hidden');
+    await new Promise(r=>requestAnimationFrame(r));
     gate.remove();
     window.dispatchEvent(new CustomEvent('cp-waiter-ui-ready'));
   }catch(error){
     console.error(error);
     loading=false;
+    document.body.classList.remove('waiter-ui-ready');
     gate.classList.remove('loading-panel');
     if(h)h.textContent='Erro ao carregar';
     if(p)p.textContent='Não foi possível preparar o painel.';
