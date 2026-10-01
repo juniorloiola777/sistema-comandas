@@ -1,31 +1,6 @@
-const CACHE='comanda-prime-v27';
-const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-close.js','/waiter-cash-control.js','/waiter-cash-guard.js','/waiter-time-fix.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-delete-user.js','/admin-report-detail.js','/admin-reset.js','/admin-enhancements.js','/admin-product-actions.js','/admin-product-delete-lock.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
+const CACHE='comanda-prime-v28';
+const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-cash-control.js','/waiter-cash-guard.js','/waiter-ui-v28.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-delete-user.js','/admin-report-detail.js','/admin-reset.js','/admin-enhancements.js','/admin-product-actions.js','/admin-product-delete-lock.js','/admin-audit-v28.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
 
-self.addEventListener('install',event=>event.waitUntil(
-  caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())
-));
-
-self.addEventListener('activate',event=>event.waitUntil(
-  caches.keys()
-    .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
-    .then(()=>self.clients.claim())
-));
-
-self.addEventListener('fetch',event=>{
-  const req=event.request;
-  if(req.method!=='GET')return;
-  const url=new URL(req.url);
-  if(url.origin!==self.location.origin)return;
-  const isNavigation=req.mode==='navigate'||(req.headers.get('accept')||'').includes('text/html');
-  event.respondWith(
-    fetch(req).then(res=>{
-      if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(cache=>cache.put(req,copy)).catch(()=>{});}
-      return res;
-    }).catch(async()=>{
-      const cached=await caches.match(req,{ignoreSearch:true});
-      if(cached)return cached;
-      if(isNavigation)return caches.match(url.pathname.startsWith('/admin')?'/admin.html':'/index.html');
-      return new Response('',{status:503,statusText:'Offline'});
-    })
-  );
-});
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;const url=new URL(req.url);if(url.origin!==self.location.origin)return;const isNavigation=req.mode==='navigate'||(req.headers.get('accept')||'').includes('text/html');event.respondWith(fetch(req).then(res=>{if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(cache=>cache.put(req,copy)).catch(()=>{})}return res}).catch(async()=>{const cached=await caches.match(req,{ignoreSearch:true});if(cached)return cached;if(isNavigation)return caches.match(url.pathname.startsWith('/admin')?'/admin.html':'/index.html');return new Response('',{status:503,statusText:'Offline'})}))});
