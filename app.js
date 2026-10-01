@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='25';
+  const VERSION='26';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -64,7 +64,7 @@
 
   function loadExtraModules(){
     (isAdmin
-      ?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js']
+      ?['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-product-delete-lock.js']
       :['waiter-close.js','waiter-cash-control.js','waiter-cash-guard.js']
     ).forEach(path=>loadScript(path));
   }
