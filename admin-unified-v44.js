@@ -1,0 +1,1 @@
+(()=>{const A=window.APP;if(!A||document.body.dataset.page!=='admin'||window.__adminUnifiedV44)return;window.__adminUnifiedV44=true;console.log('admin unified v44');})();
