@@ -9,6 +9,10 @@
 <style>
   #waiterView{visibility:hidden!important}
   body.waiter-ui-ready #waiterView{visibility:visible!important}
+  .waiter-settings-u{display:none}
+  .waiter-settings-u.active{display:grid}
+  .waiter-adjust-u{display:none}
+  .waiter-adjust-u.active{display:block}
 </style>
 <link rel="stylesheet" href="/styles.css">
 </head>
@@ -16,22 +20,35 @@
 <section id="waiterView" class="app waiter-shell">
   <header class="waiter-head">
     <div class="brand"><div><small></small><h1>COMANDA</h1></div><div class="brand-badge">Garçom</div></div>
-    <div class="user-pill"><span>👤 Usuário: <strong id="waiterNameLabel">Garçom 01</strong></span><span>● online</span></div>
-    <div class="live-mini"><span class="live-dot"></span><span id="waiterLiveText">Conectando...</span></div>
   </header>
+
   <main class="content">
     <div class="mobile-title-row"><div><div class="eyebrow">ATENDIMENTO</div><h2 class="screen-title">Mesas</h2></div></div>
-    <div class="search"><input id="searchTable" placeholder="Mesa ou nome do cliente"/><button id="searchBtn">Buscar</button></div>
-    <div class="action-row"><button class="primary" id="newTable">＋ Abrir mesa</button><button id="newTab">＋ Comanda individual</button></div>
+
+    <div id="waiterSettingsUnified" class="waiter-settings-u">
+      <div class="user-pill"><span>👤 Usuário: <strong id="waiterNameLabel">Garçom 01</strong></span><span>● online</span></div>
+      <div class="live-mini"><span class="live-dot"></span><span id="waiterLiveText">Conectando...</span></div>
+    </div>
+
     <div class="legend"><span><i class="dot" style="background:#1fa34a"></i>Livre</span><span><i class="dot" style="background:#d91e2b"></i>Ocupada</span><span><i class="dot" style="background:#f59e0b"></i>Fechamento</span></div>
     <div id="tableGrid" class="table-grid"></div>
+    <div id="waiterAdjustments" class="waiter-adjust-u"></div>
   </main>
-  <div class="bottom-nav">
+
+  <div class="bottom-nav" style="grid-template-columns:1fr 1fr">
     <button class="active" id="bottomTables">▦<br>Mesas</button>
-    <button id="bottomSearch">⌕<br>Buscar</button>
     <button id="bottomTabs">⚙<br>Ajustes</button>
   </div>
 </section>
+
+<!-- Ganchos internos de compatibilidade do motor de pedidos; não fazem parte da interface. -->
+<div aria-hidden="true" hidden>
+  <input id="searchTable" value="" />
+  <button id="searchBtn" type="button"></button>
+  <button id="newTable" type="button"></button>
+  <button id="newTab" type="button"></button>
+  <button id="bottomSearch" type="button"></button>
+</div>
 
 <div id="overlay" class="overlay hidden"><div class="sheet"><div class="sheet-head"><h3 id="sheetTitle">Nova comanda</h3><button class="x" id="closeSheet">×</button></div><div class="sheet-body">
   <div class="client-line"><input id="clientName" placeholder="Nome do cliente"/><select id="tableSelect"></select></div>
