@@ -1,0 +1,22 @@
+(()=>{
+const A=window.APP;if(!A||document.body.dataset.page!=='waiter'||window.__waiterUiV30)return;window.__waiterUiV30=true;
+const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co',SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz',SESSION_KEY='comandaPrimeWaiterSessionV1';
+const $=s=>document.querySelector(s);
+const token=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')?.token||''}catch(_){return''}};
+async function rpc(name,body={}){const t=token();if(!t)throw new Error('Sessão encerrada. Entre novamente.');const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({p_session_token:t,...body}),cache:'no-store'});const d=await r.json().catch(()=>null),x=Array.isArray(d)?d[0]:d;if(!r.ok)throw new Error(x?.message||x?.error||`Erro ${r.status}`);return x||{}}
+const style=document.createElement('style');style.textContent=`
+#waiterView .search,#waiterView .action-row,#bottomSearch{display:none!important}.bottom-nav{grid-template-columns:1fr 1fr!important}.waiter-head .brand small{display:none!important}.waiter-head .brand h1{font-size:32px!important}.add-table-card{order:9999}.waiter-settings-v30{display:none;margin-bottom:12px}.waiter-settings-v30.active{display:grid;gap:10px}.waiter-settings-v30 .user-pill,.waiter-settings-v30 .live-mini,.waiter-settings-v30 .waiter-cash-controls,.waiter-settings-v30 .waiter-cash-banner{margin:0!important;width:100%!important}
+`;document.head.appendChild(style);
+function renameBrand(){const h=$('.waiter-head .brand h1');if(h)h.textContent='COMANDA'}
+function settingsArea(){let a=$('#waiterSettingsV30');if(a)return a;const content=$('#waiterView .content');if(!content)return null;a=document.createElement('div');a.id='waiterSettingsV30';a.className='waiter-settings-v30';const title=$('.mobile-title-row');if(title)title.after(a);else content.prepend(a);return a}
+function moveSettings(){const a=settingsArea();if(!a)return;['.user-pill','.live-mini','#waiterCashControls','#waiterCashBanner'].forEach(sel=>{const el=$(sel);if(el&&el.parentElement!==a)a.appendChild(el)})}
+function isAdjustments(){return $('#waiterAdjustments')?.classList.contains('active')}
+function updateLayout(){renameBrand();moveSettings();const a=settingsArea();if(a)a.classList.toggle('active',isAdjustments());if(!isAdjustments())ensurePlus()}
+async function addTable(){if(A.state()?.cash?.status!=='open')return A.toast('Abra o caixa antes de adicionar mesa.');try{const r=await rpc('waiter_add_table');if(!r?.success)throw new Error(r?.error||'Não foi possível criar a mesa.');if(!A.state().tables.some(x=>Number(x.id)===Number(r.table_id)))A.state().tables.push(r.table_data);window.renderPage?.();setTimeout(ensurePlus,50);A.toast(`Mesa ${r.table_id} criada`)}catch(e){console.error(e);A.toast(e.message||'Não foi possível criar a mesa.')}}
+function ensurePlus(){const grid=$('#tableGrid');if(!grid||isAdjustments())return;[...grid.querySelectorAll('.table-card')].forEach(b=>{const tx=b.querySelector('.table-no')?.textContent||'';if(/^Comanda/i.test(tx))b.remove()});let plus=grid.querySelector('.add-table-card');if(!plus){plus=document.createElement('button');plus.type='button';plus.className='table-card add-table-card';plus.innerHTML='<div class="table-no">＋</div><div class="client">Adicionar mesa</div><div class="meta">Cria a próxima mesa</div>';plus.onclick=addTable;grid.appendChild(plus)}else if(plus!==grid.lastElementChild){grid.appendChild(plus)}}
+async function syncState(){try{const r=await fetch(`${SUPABASE_URL}/rest/v1/app_state?id=eq.1&select=data`,{headers:{apikey:SUPABASE_KEY,Accept:'application/json'},cache:'no-store'});if(!r.ok)return;const rows=await r.json(),fresh=rows?.[0]?.data;if(!fresh)return;const s=A.state();Object.keys(s).forEach(k=>delete s[k]);Object.assign(s,fresh);window.renderPage?.();setTimeout(updateLayout,50)}catch(e){console.warn('Falha ao atualizar mesas',e)}}
+document.addEventListener('click',e=>{if(e.target.closest?.('#bottomTables,#bottomTabs'))setTimeout(updateLayout,20)},true);
+const finish=$('#finishPayV28');if(finish)finish.addEventListener('click',()=>{setTimeout(syncState,500);setTimeout(syncState,1300)});
+setTimeout(()=>{updateLayout();syncState()},250);
+setInterval(()=>{renameBrand();moveSettings();if(!isAdjustments())ensurePlus()},2500);
+})();
