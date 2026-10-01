@@ -1,13 +1,14 @@
 (()=>{
-const A=window.APP;if(!A||document.body.dataset.page!=='waiter'||window.__waiterUiV35)return;window.__waiterUiV35=true;
+const A=window.APP;if(!A||document.body.dataset.page!=='waiter'||window.__waiterUiV36)return;window.__waiterUiV36=true;
 const $=s=>document.querySelector(s);
-const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co',SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
+const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co',SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz',SESSION_KEY='comandaPrimeWaiterSessionV1';
 let loadingAdjustments=false;
 const style=document.createElement('style');style.textContent=`
 body[data-page="waiter"] .add-table-card{display:none!important}
 body[data-page="waiter"].extra-table-allowed #tableGrid .add-table-card{display:grid!important}
 body[data-page="waiter"] #waiterAdjustments.active{display:block!important}
 body[data-page="waiter"] #waiterAdjustments .adjust-loading{padding:22px 12px;text-align:center;color:#747d92;font-weight:800}
+body[data-page="waiter"] #waiterAdjustments .waiter-adjust-card{display:block!important}
 `;document.head.appendChild(style);
 function panel(){return $('#waiterAdjustments')}
 function inAdjustments(){return !!panel()?.classList.contains('active')}
@@ -15,36 +16,19 @@ function clearHiddenSearch(){const s=$('#searchTable');if(s&&s.value){s.value=''
 function tables(){return Array.isArray(A.state()?.tables)?A.state().tables:[]}
 function canAddExtra(){const t=tables();return !inAdjustments()&&t.length>=14&&t.every(x=>String(x.status||'free')!=='free')}
 function updateExtraButton(){const allowed=canAddExtra();document.body.classList.toggle('extra-table-allowed',allowed);if(inAdjustments())$('#tableGrid')?.querySelectorAll('.add-table-card').forEach(x=>x.remove())}
+function waiterToken(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')?.token||''}catch(_){return''}}
+async function rpc(name,body={}){const token=waiterToken();if(!token)throw new Error('Sessão do garçom inválida');const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({p_session_token:token,...body}),cache:'no-store'});const d=await r.json().catch(()=>null),x=Array.isArray(d)?d[0]:d;if(!r.ok)throw new Error(x?.message||x?.error||`Erro ${r.status}`);return x||{}}
+function fmt(ts){if(!ts)return'Horário não registrado';const n=Number(ts);return new Date(Number.isFinite(n)?n:ts).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
+function allClosedFrom(state){return [...(Array.isArray(state?.closedSales)?state.closedSales:[]).map(x=>({...x,_kind:'closed'})),...(Array.isArray(state?.unpaidSales)?state.unpaidSales:[]).map(x=>({...x,_kind:'unpaid'}))].sort((a,b)=>Number(b.closedAt||b.unpaidAt||0)-Number(a.closedAt||a.unpaidAt||0))}
+function renderAdjustmentsDirect(state){const p=panel();if(!p)return;const list=allClosedFrom(state);p.innerHTML=list.length?list.map(s=>{const title=s.type==='mesa'?`Mesa ${s.refId}`:`Comanda #${s.refId}`;const when=s.closedAt||s.unpaidAt;const who=s.closedBy||s.recordedBy||s.waiter||'Garçom';const pay=s.payment|| (s._kind==='unpaid'?'Não pagou':'');const items=(s.items||[]).map(i=>`${Number(i.qty||0)}× ${A.esc(i.name||A.product?.(i.pid)?.name||'Produto')} • ${A.brl(Number(i.price||0)*Number(i.qty||0))}`).join('<br>');return `<div class="waiter-adjust-card"><div class="waiter-adjust-head"><div><strong>${title} • ${A.esc(s.client||'Cliente')}</strong><span>${fmt(when)} • ${A.esc(who)}</span></div><strong>${A.brl(Number(s.total||0))}</strong></div><div class="waiter-adjust-items">${items||'Sem itens detalhados'}${pay?`<br><strong>Pagamento:</strong> ${A.esc(pay)}`:''}</div><button class="waiter-reopen" data-v36-reopen="${s.id}">Reabrir para ajustar</button></div>`}).join(''):'<div class="empty-state">Nenhuma conta fechada para ajustar.</div>';
+p.querySelectorAll('[data-v36-reopen]').forEach(b=>b.onclick=()=>reopenSale(Number(b.dataset.v36Reopen),state));}
+async function fetchFreshState(){const r=await fetch(`${SUPABASE_URL}/rest/v1/app_state?id=eq.1&select=data`,{headers:{apikey:SUPABASE_KEY,Accept:'application/json'},cache:'no-store'});if(!r.ok)throw new Error(`Erro ${r.status}`);const rows=await r.json(),fresh=rows?.[0]?.data;if(!fresh)throw new Error('Dados não encontrados');return fresh}
+function mergeFreshIntoLocal(fresh){const s=A.state();['tables','tabs','closedSales','unpaidSales','products','cash','saleAudit'].forEach(k=>{if(fresh[k]!==undefined)s[k]=fresh[k]})}
+async function reopenSale(id,state){const sale=allClosedFrom(state).find(x=>Number(x.id)===Number(id));if(!sale)return A.toast?.('Conta não encontrada.');const title=sale.type==='mesa'?`Mesa ${sale.refId}`:`Comanda #${sale.refId}`;if(!confirm(`Reabrir ${title} de ${sale.client||'cliente'} para ajustar?`))return;try{await rpc('waiter_archive_sale',{p_sale_id:id});const r=await rpc('waiter_reopen_sale',{p_sale_id:id});if(!r?.success)throw new Error(r?.error||'Não foi possível reabrir.');try{await rpc('waiter_normalize_order_lines',{p_order_type:r.order_type,p_order_id:r.order_id})}catch(_){}const fresh=await fetchFreshState();mergeFreshIntoLocal(fresh);window.renderPage?.();forceTables();A.toast?.('Conta reaberta • alterações serão registradas no Admin')}catch(e){console.error(e);A.toast?.(e.message||'Não foi possível reabrir a conta.') }}
 function forceTables(){clearHiddenSearch();const btn=$('#bottomTables'),p=panel();if(btn&&typeof btn.onclick==='function')btn.onclick();if(p)p.classList.remove('active');const grid=$('#tableGrid'),legend=$('#waiterView .legend'),title=$('.screen-title');if(grid)grid.style.display='grid';if(legend)legend.style.display='flex';if(title)title.textContent='Mesas';btn?.classList.add('active');$('#bottomTabs')?.classList.remove('active');setTimeout(updateExtraButton,30)}
-async function syncClosedSales(){
- try{
-  const r=await fetch(`${SUPABASE_URL}/rest/v1/app_state?id=eq.1&select=data`,{headers:{apikey:SUPABASE_KEY,Accept:'application/json'},cache:'no-store'});
-  if(!r.ok)throw new Error(`Erro ${r.status}`);
-  const rows=await r.json(),fresh=rows?.[0]?.data;
-  if(!fresh)throw new Error('Dados não encontrados');
-  const s=A.state();
-  s.closedSales=Array.isArray(fresh.closedSales)?fresh.closedSales:[];
-  s.unpaidSales=Array.isArray(fresh.unpaidSales)?fresh.unpaidSales:[];
-  return true;
- }catch(e){console.error('Falha ao carregar fechamentos em Ajustes',e);A.toast?.('Não foi possível atualizar os fechamentos.');return false}
-}
-async function forceAdjustments(){
- if(loadingAdjustments)return;
- loadingAdjustments=true;clearHiddenSearch();
- const btn=$('#bottomTabs'),p=panel(),grid=$('#tableGrid'),legend=$('#waiterView .legend'),title=$('.screen-title');
- if(p){p.classList.add('active');p.innerHTML='<div class="adjust-loading">Carregando contas fechadas...</div>'}
- if(grid)grid.style.display='none';if(legend)legend.style.display='none';if(title)title.textContent='Ajustes';$('#bottomTables')?.classList.remove('active');btn?.classList.add('active');document.body.classList.remove('extra-table-allowed');grid?.querySelectorAll('.add-table-card').forEach(x=>x.remove());
- try{
-  await syncClosedSales();
-  if(btn&&typeof btn.onclick==='function')btn.onclick();
-  if(p&&!p.classList.contains('active'))p.classList.add('active');
-  if(grid)grid.style.display='none';if(legend)legend.style.display='none';if(title)title.textContent='Ajustes';
-  document.body.classList.remove('extra-table-allowed');grid?.querySelectorAll('.add-table-card').forEach(x=>x.remove());
- }finally{loadingAdjustments=false}
-}
+async function forceAdjustments(){if(loadingAdjustments)return;loadingAdjustments=true;clearHiddenSearch();const btn=$('#bottomTabs'),p=panel(),grid=$('#tableGrid'),legend=$('#waiterView .legend'),title=$('.screen-title');if(p){p.classList.add('active');p.innerHTML='<div class="adjust-loading">Carregando contas fechadas...</div>'}if(grid)grid.style.display='none';if(legend)legend.style.display='none';if(title)title.textContent='Ajustes';$('#bottomTables')?.classList.remove('active');btn?.classList.add('active');document.body.classList.remove('extra-table-allowed');grid?.querySelectorAll('.add-table-card').forEach(x=>x.remove());try{const fresh=await fetchFreshState();mergeFreshIntoLocal(fresh);renderAdjustmentsDirect(fresh)}catch(e){console.error('Falha ao carregar fechamentos em Ajustes',e);if(p)p.innerHTML='<div class="empty-state">Não foi possível carregar as contas fechadas. Tente novamente.</div>';A.toast?.('Não foi possível atualizar os fechamentos.')}finally{loadingAdjustments=false}}
 document.addEventListener('click',e=>{if(e.target.closest?.('#bottomTabs')){e.preventDefault();e.stopImmediatePropagation();setTimeout(forceAdjustments,0)}if(e.target.closest?.('#bottomTables'))setTimeout(forceTables,0)},true);
 const observer=new MutationObserver(()=>{if(inAdjustments()){document.body.classList.remove('extra-table-allowed');$('#tableGrid')?.querySelectorAll('.add-table-card').forEach(x=>x.remove())}else updateExtraButton()});
-const start=()=>{clearHiddenSearch();forceTables();const p=panel();if(p)observer.observe(p,{attributes:true,attributeFilter:['class']});const grid=$('#tableGrid');if(grid)observer.observe(grid,{childList:true,subtree:true});};
-setTimeout(start,450);setTimeout(start,1400);
-setInterval(()=>{clearHiddenSearch();updateExtraButton()},1200);
+const start=()=>{clearHiddenSearch();forceTables();const p=panel();if(p)observer.observe(p,{attributes:true,attributeFilter:['class']});const grid=$('#tableGrid');if(grid)observer.observe(grid,{childList:true,subtree:true})};
+setTimeout(start,450);setTimeout(start,1400);setInterval(()=>{clearHiddenSearch();updateExtraButton()},1200);
 })();
