@@ -1,0 +1,15 @@
+(()=>{
+const A=window.APP;if(!A||document.body.dataset.page!=='admin'||window.__adminProductCategoryV46)return;window.__adminProductCategoryV46=true;
+const $=s=>document.querySelector(s);
+function categories(){return [...new Set([...(A.state().categories||[]),...(A.state().products||[]).map(p=>p.cat)].map(x=>String(x||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'))}
+function refreshSelect(keep){const el=$('#pmCategory');if(!el)return;const current=keep??el.value;el.innerHTML='<option value="">Selecione uma categoria</option>'+categories().map(c=>`<option value="${A.esc(c)}">${A.esc(c)}</option>`).join('')+'<option value="__new__">＋ Criar nova categoria</option>';if(current&&current!=='__new__'){if(![...el.options].some(o=>o.value===current)){const o=document.createElement('option');o.value=current;o.textContent=current;el.insertBefore(o,el.lastElementChild)}el.value=current}else el.value=current||''}
+function toggleNew(){const el=$('#pmCategory'),box=$('#pmNewCategoryWrap');if(!el||!box)return;box.style.display=el.value==='__new__'?'grid':'none';if(el.value==='__new__')setTimeout(()=>$('#pmNewCategory')?.focus(),0)}
+function install(){const old=$('#pmCategory');if(!old)return false;if(old.tagName!=='SELECT'){const sel=document.createElement('select');sel.id='pmCategory';sel.className=old.className;old.replaceWith(sel)}
+ const el=$('#pmCategory');let box=$('#pmNewCategoryWrap');if(!box){box=document.createElement('div');box.id='pmNewCategoryWrap';box.className='field-v44';box.style.display='none';box.innerHTML='<label>Nome da nova categoria</label><input id="pmNewCategory" placeholder="Ex.: Sobremesas">';el.closest('.field-v44')?.after(box)}
+ refreshSelect(el.value);el.onchange=toggleNew;toggleNew();
+ const newBtn=$('#newProductAction');if(newBtn&&!newBtn.dataset.catV46){newBtn.dataset.catV46='1';newBtn.addEventListener('click',()=>setTimeout(()=>{refreshSelect('');const n=$('#pmNewCategory');if(n)n.value='';toggleNew()},0),true)}
+ const save=$('#saveProductAction');if(save&&!save.dataset.catV46){save.dataset.catV46='1';save.addEventListener('click',e=>{const s=$('#pmCategory');if(!s)return;if(s.value==='__new__'){const n=String($('#pmNewCategory')?.value||'').trim();if(!n){e.preventDefault();e.stopImmediatePropagation();return A.toast('Digite o nome da nova categoria.')}if(categories().some(c=>c.toLowerCase()===n.toLowerCase())){const existing=categories().find(c=>c.toLowerCase()===n.toLowerCase());refreshSelect(existing);toggleNew();return}const o=document.createElement('option');o.value=n;o.textContent=n;s.insertBefore(o,s.lastElementChild);s.value=n;toggleNew()}},true)}
+ const modal=$('#productModal');if(modal&&!modal.dataset.catV46){modal.dataset.catV46='1';new MutationObserver(()=>{if(!modal.classList.contains('hidden'))setTimeout(()=>{const v=$('#pmCategory')?.value||'';refreshSelect(v);toggleNew()},0)}).observe(modal,{attributes:true,attributeFilter:['class']})}
+ return true}
+let tries=0;const t=setInterval(()=>{if(install()||++tries>40)clearInterval(t)},150);
+})();
