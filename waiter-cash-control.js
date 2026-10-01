@@ -6,66 +6,14 @@ if(!content)return;
 const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';
 const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';
 const db=window.supabase?.createClient(SUPABASE_URL,SUPABASE_KEY);
-
-const style=document.createElement('style');
-style.textContent=`
-.waiter-cash-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding:12px 14px;border:1px solid #e5e8ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(10,22,50,.05)}
-.waiter-cash-info strong{display:block;color:#0b1739;font-size:13px}.waiter-cash-info span{display:block;color:#7b8499;font-size:11px;margin-top:2px}.waiter-cash-buttons{display:flex;gap:7px;flex-wrap:wrap}.waiter-cash-buttons button{border:0;border-radius:10px;padding:9px 11px;font-size:11px;font-weight:950;cursor:pointer}.waiter-open-cash{background:#138a48;color:#fff}.waiter-close-cash{background:#eef1f6;color:#0b1739}.waiter-cash-buttons button:disabled{opacity:.45;cursor:wait}@media(max-width:520px){.waiter-cash-controls{align-items:flex-start;flex-direction:column}.waiter-cash-buttons{width:100%}.waiter-cash-buttons button{flex:1}}
-`;
-document.head.appendChild(style);
-
-const box=document.createElement('div');
-box.id='waiterCashControls';
-box.className='waiter-cash-controls';
-box.innerHTML=`<div class="waiter-cash-info"><strong id="waiterCashControlStatus">Caixa fechado</strong><span id="waiterCashControlActor">Você pode abrir o caixa para iniciar o atendimento.</span></div><div class="waiter-cash-buttons"><button id="waiterOpenCash" class="waiter-open-cash" type="button">Abrir caixa</button><button id="waiterCloseCash" class="waiter-close-cash" type="button">Fechar caixa</button></div>`;
-content.prepend(box);
-
-const $=id=>document.getElementById(id);
-function cash(){return A.state()?.cash||{status:'closed'}}
-function fmt(ts){if(!ts)return'';return new Date(Number(ts)).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
-function session(){try{return JSON.parse(localStorage.getItem('comandaPrimeWaiterSessionV1')||'null')}catch(_){return null}}
-function refresh(){
-  const c=cash(),open=c.status==='open';
-  $('waiterCashControlStatus').textContent=open?'Caixa aberto':'Caixa fechado';
-  const actor=open?(c.openedBy||''):(c.closedBy||'');
-  $('waiterCashControlActor').textContent=open?`${actor?'Aberto por '+actor+' • ':''}${fmt(c.openedAt)}`:(c.openedAt?'Caixa pausado. Qualquer garçom pode reabrir.':'Você pode abrir o caixa para iniciar o atendimento.');
-  $('waiterOpenCash').disabled=open;$('waiterCloseCash').disabled=!open;
-  $('waiterOpenCash').textContent=c.openedAt&&!open?'Reabrir caixa':'Abrir caixa';
-}
+const style=document.createElement('style');style.textContent=`.waiter-cash-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding:12px 14px;border:1px solid #e5e8ef;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(10,22,50,.05)}.waiter-cash-info strong{display:block;color:#0b1739;font-size:13px}.waiter-cash-info span{display:block;color:#7b8499;font-size:11px;margin-top:2px}.waiter-cash-buttons{display:flex;gap:7px;flex-wrap:wrap}.waiter-cash-buttons button{border:0;border-radius:10px;padding:9px 11px;font-size:11px;font-weight:950;cursor:pointer}.waiter-open-cash{background:#138a48;color:#fff}.waiter-close-cash{background:#eef1f6;color:#0b1739}.waiter-cash-buttons button:disabled{opacity:.45;cursor:wait}@media(max-width:520px){.waiter-cash-controls{align-items:flex-start;flex-direction:column}.waiter-cash-buttons{width:100%}.waiter-cash-buttons button{flex:1}}`;document.head.appendChild(style);
+const box=document.createElement('div');box.id='waiterCashControls';box.className='waiter-cash-controls';box.innerHTML=`<div class="waiter-cash-info"><strong id="waiterCashControlStatus">Caixa fechado</strong><span id="waiterCashControlActor">Você pode abrir o caixa para iniciar o atendimento.</span></div><div class="waiter-cash-buttons"><button id="waiterOpenCash" class="waiter-open-cash" type="button">Abrir caixa</button><button id="waiterCloseCash" class="waiter-close-cash" type="button">Fechar caixa</button></div>`;content.prepend(box);
+const $=id=>document.getElementById(id);function cash(){return A.state()?.cash||{status:'closed'}}function fmt(ts){if(!ts)return'';return new Date(Number(ts)).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}function session(){try{return JSON.parse(localStorage.getItem('comandaPrimeWaiterSessionV1')||'null')}catch(_){return null}}
+function setText(el,text){if(el&&el.textContent!==text)el.textContent=text}
+function refresh(){const c=cash(),open=c.status==='open';setText($('waiterCashControlStatus'),open?'Caixa aberto':'Caixa fechado');const actor=open?(c.openedBy||''):(c.closedBy||'');setText($('waiterCashControlActor'),open?`${actor?'Aberto por '+actor+' • ':''}${fmt(c.openedAt)}`:(c.openedAt?'Caixa pausado. Qualquer garçom pode reabrir.':'Você pode abrir o caixa para iniciar o atendimento.'));$('waiterOpenCash').disabled=open;$('waiterCloseCash').disabled=!open;setText($('waiterOpenCash'),c.openedAt&&!open?'Reabrir caixa':'Abrir caixa')}
 function busy(on){$('waiterOpenCash').disabled=on;$('waiterCloseCash').disabled=on}
-async function action(type,openingAmount=0){
-  const s=session();if(!s?.token)return A.toast('Sessão encerrada. Entre novamente.');
-  if(!db)return A.toast('Sem conexão com o servidor.');
-  busy(true);
-  try{
-    const {data,error}=await db.rpc('waiter_cash_action',{p_session_token:s.token,p_action:type,p_opening_amount:openingAmount});
-    if(error)throw error;
-    const r=Array.isArray(data)?data[0]:data;
-    if(!r?.success)throw new Error('Não foi possível atualizar o caixa.');
-    A.toast(type==='close'?'Caixa fechado • seu nome foi registrado':'Caixa aberto • seu nome foi registrado');
-    setTimeout(()=>location.reload(),350);
-  }catch(e){
-    console.error(e);
-    const m=String(e?.message||'');
-    A.toast(m.toLowerCase().includes('mesas ou comandas abertas')?'Feche todas as mesas e comandas antes de fechar o caixa.':(m||'Não foi possível atualizar o caixa.'));
-    busy(false);refresh();
-  }
-}
-async function openCash(){
-  const c=cash();
-  let opening=Number(c.openingAmount)||0;
-  if(!c.openedAt){
-    const raw=prompt('Valor inicial do caixa (fundo/troco):','0');if(raw===null)return;
-    opening=Number(String(raw).replace(',','.'));
-    if(!Number.isFinite(opening)||opening<0)return A.toast('Informe um valor inicial válido.');
-  }
-  await action(c.openedAt?'reopen':'open',opening);
-}
-async function closeCash(){
-  if(A.openOrders().length)return A.toast('Feche todas as mesas e comandas antes de fechar o caixa.');
-  if(!confirm('Fechar o caixa agora? O seu nome ficará registrado no histórico do administrador.'))return;
-  await action('close',0);
-}
-$('waiterOpenCash').onclick=openCash;$('waiterCloseCash').onclick=closeCash;
-refresh();setInterval(refresh,900);
+async function action(type,openingAmount=0){const s=session();if(!s?.token)return A.toast('Sessão encerrada. Entre novamente.');if(!db)return A.toast('Sem conexão com o servidor.');busy(true);try{const {data,error}=await db.rpc('waiter_cash_action',{p_session_token:s.token,p_action:type,p_opening_amount:openingAmount});if(error)throw error;const r=Array.isArray(data)?data[0]:data;if(!r?.success)throw new Error('Não foi possível atualizar o caixa.');A.toast(type==='close'?'Caixa fechado • seu nome foi registrado':'Caixa aberto • seu nome foi registrado');setTimeout(()=>location.reload(),350)}catch(e){console.error(e);const m=String(e?.message||'');A.toast(m.toLowerCase().includes('mesas ou comandas abertas')?'Feche todas as mesas e comandas antes de fechar o caixa.':(m||'Não foi possível atualizar o caixa.'));busy(false);refresh()}}
+async function openCash(){const c=cash();let opening=Number(c.openingAmount)||0;if(!c.openedAt){const raw=prompt('Valor inicial do caixa (fundo/troco):','0');if(raw===null)return;opening=Number(String(raw).replace(',','.'));if(!Number.isFinite(opening)||opening<0)return A.toast('Informe um valor inicial válido.')}await action(c.openedAt?'reopen':'open',opening)}
+async function closeCash(){if(A.openOrders().length)return A.toast('Feche todas as mesas e comandas antes de fechar o caixa.');if(!confirm('Fechar o caixa agora? O seu nome ficará registrado no histórico do administrador.'))return;await action('close',0)}
+$('waiterOpenCash').onclick=openCash;$('waiterCloseCash').onclick=closeCash;refresh();setInterval(refresh,1000);
 })();
