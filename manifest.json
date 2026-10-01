@@ -1,6 +1,6 @@
 {
-  "name": "Comanda Prime",
-  "short_name": "Comandas",
+  "name": "COMANDA",
+  "short_name": "Comanda",
   "description": "Sistema PWA de mesas, comandas, produtos, estoque e painel administrativo.",
   "start_url": "/",
   "display": "standalone",
