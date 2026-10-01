@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='26';
+  const VERSION='27';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
