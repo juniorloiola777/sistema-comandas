@@ -1,4 +1,4 @@
-const CACHE='comanda-prime-v30';
+const CACHE='comanda-prime-v31';
 const CORE=['/','/index.html','/admin.html','/styles.css','/v2.css','/app.js','/shared.js','/waiter-auth.js','/waiter.js','/waiter-cash-control.js','/waiter-cash-guard.js','/waiter-ui-v28.js','/waiter-ui-v30-fixes.js','/admin-auth.js','/admin-access-fix.js','/admin.js','/admin-patch.js','/admin-order-edit.js','/admin-cash-control.js','/admin-unpaid.js','/admin-delete-user.js','/admin-report-detail.js','/admin-reset.js','/admin-enhancements.js','/admin-product-actions.js','/admin-product-delete-lock.js','/admin-audit-v28.js','/login-interaction-fix.js','/manifest.json','/icon.svg'];
 
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
