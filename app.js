@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='36';
+  const VERSION='37';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -40,9 +40,10 @@
   function bootDone(){boot.remove()}
   const css=document.createElement('link');css.rel='stylesheet';css.href=`/v2.css?v=${VERSION}`;document.head.appendChild(css);
   function loadScript(path,onload,onerror){const s=document.createElement('script');s.src=`/${path}?v=${VERSION}`;if(onload)s.onload=onload;if(onerror)s.onerror=onerror;document.body.appendChild(s);return s}
+  function loadSequence(paths,done){const next=()=>{const p=paths.shift();if(!p){done?.();return}loadScript(p,next,next)};next()}
   function loadExtraModules(){
     if(isAdmin){
-      ['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-product-delete-lock.js','admin-audit-v28.js'].forEach(path=>loadScript(path));
+      loadSequence(['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-audit-v28.js','admin-safe-enhancements.js','admin-reset.js']);
     }else{
       loadScript('waiter-cash-control.js',()=>{
         loadScript('waiter-cash-guard.js',()=>{
@@ -57,6 +58,6 @@
     const readSession=()=>{try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}};const saveSession=s=>{try{s?localStorage.setItem(SESSION_KEY,JSON.stringify(s)):localStorage.removeItem(SESSION_KEY)}catch(_){}};
     A.waiterSession=async()=>{const s=readSession();if(!s?.token)return{ok:false,reason:'no_session'};const localUser={username:s.username,displayName:s.displayName||s.username};const exp=s.expiresAt?Date.parse(s.expiresAt):NaN;if(Number.isFinite(exp)&&exp<=Date.now()){saveSession(null);return{ok:false,reason:'expired'}}if(!A.cloud)return{ok:true,user:localUser};const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),4500);try{const res=await fetch(`${SUPABASE_URL}/rest/v1/rpc/waiter_validate_session`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify({p_session_token:s.token}),signal:controller.signal,cache:'no-store'});if(!res.ok)throw new Error(`Falha HTTP ${res.status}`);const data=await res.json();const r=Array.isArray(data)?data[0]:data;if(!r?.valid){saveSession(null);return{ok:false,reason:'invalid'}}const next={...s,username:r.username,displayName:r.display_name||s.displayName,expiresAt:new Date(Date.now()+THIRTY_DAYS).toISOString()};saveSession(next);return{ok:true,user:{username:next.username,displayName:next.displayName}}}catch(error){console.warn('Validação online indisponível; mantendo sessão local do garçom.',error);return{ok:true,user:localUser,offline:true}}finally{clearTimeout(timer)}};
   }
-  const shared=document.createElement('script');shared.src=`/shared.js?v=${VERSION}`;shared.onload=()=>{installPersistentWaiterSession();const loadPage=()=>{const loadAuth=()=>{loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{bootDone();loadExtraModules();if(isAdmin)loadScript('admin-reset.js')},bootError)};loadScript('login-interaction-fix.js',loadAuth,loadAuth)};if(isAdmin)loadScript('admin-access-fix.js',loadPage,loadPage);else loadPage()};shared.onerror=bootError;document.body.appendChild(shared);
+  const shared=document.createElement('script');shared.src=`/shared.js?v=${VERSION}`;shared.onload=()=>{installPersistentWaiterSession();const loadPage=()=>{const loadAuth=()=>{loadScript(isAdmin?'admin-auth.js':'waiter-auth.js',()=>{bootDone();loadExtraModules()},bootError)};loadScript('login-interaction-fix.js',loadAuth,loadAuth)};if(isAdmin)loadScript('admin-access-fix.js',loadPage,loadPage);else loadPage()};shared.onerror=bootError;document.body.appendChild(shared);
   setTimeout(()=>{if(document.body.contains(boot))bootError()},12000);
 })();
