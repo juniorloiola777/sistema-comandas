@@ -1,5 +1,5 @@
 (()=>{
-  const VERSION='41';
+  const VERSION='44';
 
   const viewport=document.querySelector('meta[name="viewport"]');
   if(viewport)viewport.setAttribute('content','width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover');
@@ -38,12 +38,7 @@
   function bootDone(){boot.remove()}
   const css=document.createElement('link');css.rel='stylesheet';css.href=`/v2.css?v=${VERSION}`;document.head.appendChild(css);
   function loadScript(path,onload,onerror){const s=document.createElement('script');s.src=`/${path}?v=${VERSION}`;if(onload)s.onload=onload;if(onerror)s.onerror=onerror;document.body.appendChild(s);return s}
-  function loadSequence(paths,done){const next=()=>{const p=paths.shift();if(!p){done?.();return}loadScript(p,next,next)};next()}
-  function loadExtraModules(){
-    if(isAdmin){
-      loadSequence(['admin-order-edit.js','admin-cash-control.js','admin-unpaid.js','admin-delete-user.js','admin-report-detail.js','admin-product-actions.js','admin-audit-v28.js','admin-safe-enhancements.js','admin-reset.js']);
-    }
-  }
+  function loadExtraModules(){}
   function installPersistentWaiterSession(){
     if(isAdmin||!window.APP)return;const A=window.APP;
     const SUPABASE_URL='https://dsipffnmerbowaddbcxe.supabase.co';const SUPABASE_KEY='sb_publishable_vI64CItP0mGD4HD2DFJ2zw_zyZaveCz';const SESSION_KEY='comandaPrimeWaiterSessionV1';const THIRTY_DAYS=30*24*60*60*1000;
